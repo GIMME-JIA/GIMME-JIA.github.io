@@ -1,0 +1,822 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.26.8" theme-name="Stellar" theme-version="1.26.8">
+  
+  <meta name="generator" content="Hexo 6.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>MySQL--入门 - 小破站</title>
+
+  
+    <meta name="description" content="简介  数据库 数据库：DataBase，简称 DB，存储和管理数据的仓库。 数据库的优势：  可以持久化存储数据 方便存储和管理数据 使用了统一的方式操作数据库 SQL  数据库、数据表、数据的关系介绍：  数据库  用于存储和管理数据的仓库 一个库中可以包含多个数据表   数据表  数据库最重要的组成部分之一 由纵向的列和横向的行组成（类似 excel 表格） 可以指定列名、数据类型、约束等">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL--入门">
+<meta property="og:url" content="https://strivingto.top/2023/05/11/MySQL--%E5%85%A5%E9%97%A8/index.html">
+<meta property="og:site_name" content="小破站">
+<meta property="og:description" content="简介  数据库 数据库：DataBase，简称 DB，存储和管理数据的仓库。 数据库的优势：  可以持久化存储数据 方便存储和管理数据 使用了统一的方式操作数据库 SQL  数据库、数据表、数据的关系介绍：  数据库  用于存储和管理数据的仓库 一个库中可以包含多个数据表   数据表  数据库最重要的组成部分之一 由纵向的列和横向的行组成（类似 excel 表格） 可以指定列名、数据类型、约束等">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--rm/Snipaste_2024-03-03_12-26-46.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--rm/Snipaste_2024-03-03_12-27-26.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--rm/Snipaste_2024-03-03_12-28-17.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--rm/Snipaste_2024-03-03_12-28-57.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--rm/Snipaste_2024-03-03_12-29-30.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--rm/Snipaste_2024-03-03_12-29-59.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--rm/Snipaste_2024-03-03_12-30-06.png">
+<meta property="article:published_time" content="2023-05-11T02:41:02.000Z">
+<meta property="article:modified_time" content="2024-03-04T02:52:15.799Z">
+<meta property="article:author" content="JIA">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://strivingto.top/assets/post/MySQL--rm/Snipaste_2024-03-03_12-26-46.png">
+  
+  
+  
+  <meta name="keywords" content="MySQL">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.26.8">
+
+  
+    <link rel="shortcut icon" href="https://i.ibb.co/t8bH857/avatar.png">
+  
+
+  
+
+  
+  
+</head>
+<body>
+
+<div class="l_body content tech" id="start" layout="post" ><aside class="l_left"><div class="sidebar-container sidebar-blur">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://i.ibb.co/t8bH857/avatar.png(/)" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">JIA</div><div class="sub normal cap">种一棵树最好的时间是十年前</div><div class="sub hover cap" style="opacity:0"> 其次是现在</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"><a class="nav-item active" title="主页" href="/" style="color:#1BCDFC"><span>主页</span></a><a class="nav-item" title="友链" href="/friends/" style="color:#F44336"><span>友链</span></a><a class="nav-item" title="关于" href="/about/" style="color:#F44336"><span>关于</span></a></nav>
+</div>
+<div class="widgets">
+
+<widget class="widget-wrapper toc single" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-text"> 简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-text"> 数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mysql"><span class="toc-text"> MySQL</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84"><span class="toc-text"> 体系架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#mysql-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-text"> MySQL 整体架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sql-%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="toc-text"> SQL 执行流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BB%BA%E7%AB%8B%E8%BF%9E%E6%8E%A5"><span class="toc-text"> 建立连接</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5%E5%99%A8"><span class="toc-text"> 连接器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%9D%83%E9%99%90%E4%BF%A1%E6%81%AF"><span class="toc-text"> 权限信息</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5%E7%8A%B6%E6%80%81"><span class="toc-text"> 连接状态</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98"><span class="toc-text"> 查询缓存</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text"> 工作流程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E9%85%8D%E7%BD%AE"><span class="toc-text"> 缓存配置</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E5%A4%B1%E6%95%88"><span class="toc-text"> 缓存失效</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E6%9E%90%E5%99%A8"><span class="toc-text"> 分析器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E5%99%A8"><span class="toc-text"> 优化器</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%88%90%E6%9C%AC%E5%88%86%E6%9E%90"><span class="toc-text"> 成本分析</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%BB%9F%E8%AE%A1%E6%95%B0%E6%8D%AE"><span class="toc-text"> 统计数据</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%94%99%E9%80%89%E7%B4%A2%E5%BC%95"><span class="toc-text"> 错选索引</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E5%99%A8"><span class="toc-text"> 执行器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%95%E6%93%8E%E5%B1%82"><span class="toc-text"> 引擎层</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%88%E6%AD%A2%E6%B5%81%E7%A8%8B"><span class="toc-text"> 终止流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%88%E6%AD%A2%E8%AF%AD%E5%8F%A5"><span class="toc-text"> 终止语句</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%88%E6%AD%A2%E8%BF%9E%E6%8E%A5"><span class="toc-text"> 终止连接</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7"><span class="toc-text"> 常用工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#mysql-2"><span class="toc-text"> mysql</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mysqladmin"><span class="toc-text"> mysqladmin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mysqlbinlog"><span class="toc-text"> mysqlbinlog</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mysqldump"><span class="toc-text"> mysqldump</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E4%BB%8B%E7%BB%8D"><span class="toc-text"> 命令介绍</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%A4%87%E4%BB%BD"><span class="toc-text"> 数据备份</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mysqlimportsource"><span class="toc-text"> mysqlimport&#x2F;source</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mysqlshow"><span class="toc-text"> mysqlshow</span></a></li></ol></li></ol></div></div></widget>
+
+
+
+
+
+
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2024/01/24/MySQL--%E9%AB%98%E7%BA%A7%E7%BB%93%E6%9E%84/"><span class="title">MySQL--高级结构</span></a><a class="item title" href="/2024/01/22/MySQL--%E7%B4%A2%E5%BC%95/"><span class="title">MySQL--索引</span></a><a class="item title" href="/2023/05/21/MySQL--%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/"><span class="title">MySQL--存储引擎</span></a><a class="item title" href="/2023/05/15/MySQL--%E5%8D%95%E8%A1%A8%E6%93%8D%E4%BD%9C/"><span class="title">MySQL--单表操作</span></a><a class="item title" href="/2023/05/16/MySQL--%E5%A4%9A%E8%A1%A8%E6%93%8D%E4%BD%9C/"><span class="title">MySQL--多表操作</span></a><a class="item title active" href="/2023/05/11/MySQL--%E5%85%A5%E9%97%A8/"><span class="title">MySQL--入门</span><svg class="active-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M21 11.098v4.993c0 3.096 0 4.645-.734 5.321c-.35.323-.792.526-1.263.58c-.987.113-2.14-.907-4.445-2.946c-1.02-.901-1.529-1.352-2.118-1.47a2.225 2.225 0 0 0-.88 0c-.59.118-1.099.569-2.118 1.47c-2.305 2.039-3.458 3.059-4.445 2.945a2.238 2.238 0 0 1-1.263-.579C3 20.736 3 19.188 3 16.091v-4.994C3 6.81 3 4.666 4.318 3.333C5.636 2 7.758 2 12 2c4.243 0 6.364 0 7.682 1.332C21 4.665 21 6.81 21 11.098" opacity=".5"/><path fill="currentColor" d="M9 5.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5z"/></svg></a><a class="item title" href="/2024/01/26/MySQL--%E9%94%81%E6%9C%BA%E5%88%B6/"><span class="title">MySQL--锁机制</span></a><a class="item title" href="/2024/01/31/MySQL--%E8%BF%90%E7%BB%B4/"><span class="title">MySQL--运维</span></a><a class="item title" href="/2024/01/29/MySQL--Innodb%20%E5%BC%95%E6%93%8E/"><span class="title">MySQL--Innodb引擎</span></a><a class="item title" href="/2024/01/27/MySQL--SQL%20%E4%BC%98%E5%8C%96/"><span class="title">MySQL--SQL优化</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/blog/SOZjJe.jpg">
+  <div class="content">
+    
+<div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2023-05-11T02:41:02.000Z">2023-05-11</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2024-03-04T02:52:15.799Z">2024-03-04</time></span></div></div>
+</div>
+
+    
+    <div class="bottom">
+      <div class="text-area">
+        <h1 class="text title"><span>MySQL--入门</span></h1>
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content "><h2 id="简介"><a class="markdownIt-Anchor" href="#简介"></a> 简介</h2>
+<h3 id="数据库"><a class="markdownIt-Anchor" href="#数据库"></a> 数据库</h3>
+<p>数据库：DataBase，简称 DB，存储和管理数据的仓库。<br />
+数据库的优势：</p>
+<ul>
+<li>可以持久化存储数据</li>
+<li>方便存储和管理数据</li>
+<li>使用了统一的方式操作数据库 SQL</li>
+</ul>
+<p>数据库、数据表、数据的关系介绍：</p>
+<ul>
+<li>数据库
+<ul>
+<li>用于存储和管理数据的仓库</li>
+<li>一个库中可以包含多个数据表</li>
+</ul>
+</li>
+<li>数据表
+<ul>
+<li>数据库最重要的组成部分之一</li>
+<li>由纵向的列和横向的行组成（类似 excel 表格）</li>
+<li>可以指定列名、数据类型、约束等</li>
+<li>一个表中可以存储多条数据</li>
+</ul>
+</li>
+<li>数据：想要永久化存储的数据</li>
+</ul>
+<h3 id="mysql"><a class="markdownIt-Anchor" href="#mysql"></a> MySQL</h3>
+<p>MySQL 数据库是一个最流行的关系型数据库管理系统之一，关系型数据库是将数据保存在不同的数据表中，而且表与表之间可以有关联关系，提高了灵活性。MySQL 所使用的 SQL 语句是用于访问数据库最常用的标准化语言。</p>
+<p>缺点：数据存储在磁盘中，导致读写性能差，而且数据关系复杂，扩展性差。</p>
+<ul>
+<li>MySQL 配置：
+<ul>
+<li>修改 MySQL 默认字符集：安装 MySQL 之后第一件事就是修改字符集编码</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vim <span class="operator">/</span>etc<span class="operator">/</span>mysql<span class="operator">/</span>my.cnf</span><br><span class="line"></span><br><span class="line">添加如下内容：</span><br><span class="line">[mysqld]</span><br><span class="line"><span class="type">character</span><span class="operator">-</span><span class="keyword">set</span><span class="operator">-</span>server<span class="operator">=</span>utf8</span><br><span class="line"><span class="keyword">collation</span><span class="operator">-</span>server<span class="operator">=</span>utf8_general_ci</span><br><span class="line"></span><br><span class="line">[client]</span><br><span class="line"><span class="keyword">default</span><span class="operator">-</span><span class="type">character</span><span class="operator">-</span><span class="keyword">set</span><span class="operator">=</span>utf8</span><br></pre></td></tr></table></figure>
+<ul>
+<li>登录 MySQL：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mysql <span class="operator">-</span>u root <span class="operator">-</span>p  敲回车，输入密码</span><br><span class="line">初始密码查看：cat <span class="operator">/</span>var<span class="operator">/</span>log<span class="operator">/</span>mysqld.log</span><br><span class="line">在root<span class="variable">@localhost</span>:   后面的就是初始密码</span><br></pre></td></tr></table></figure>
+<ul>
+<li>启动 MySQL 服务：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl <span class="keyword">start</span><span class="operator">/</span>restart mysql</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看默认字符集命令：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;char%&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>修改MySQL登录密码：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> <span class="keyword">global</span> validate_password_policy<span class="operator">=</span><span class="number">0</span>;</span><br><span class="line"><span class="keyword">set</span> <span class="keyword">global</span> validate_password_length<span class="operator">=</span><span class="number">1</span>;</span><br><span class="line">  </span><br><span class="line"><span class="keyword">set</span> password<span class="operator">=</span>password(<span class="string">&#x27;密码&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>授予远程连接权限（MySQL 内输入）：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 授权</span></span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">all</span> privileges <span class="keyword">on</span> <span class="operator">*</span>.<span class="operator">*</span> <span class="keyword">to</span> <span class="string">&#x27;root&#x27;</span> @<span class="string">&#x27;%&#x27;</span> identified <span class="keyword">by</span> <span class="string">&#x27;密码&#x27;</span>;</span><br><span class="line"><span class="comment">-- 刷新</span></span><br><span class="line">flush privileges;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>修改 MySQL 绑定 IP：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd <span class="operator">/</span>etc<span class="operator">/</span>mysql<span class="operator">/</span>mysql.conf.d</span><br><span class="line">sudo chmod <span class="number">666</span> mysqld.cnf </span><br><span class="line">vim mysqld.cnf </span><br><span class="line"># bind<span class="operator">-</span>address <span class="operator">=</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>注释该行</span><br></pre></td></tr></table></figure>
+<ul>
+<li>关闭 Linux 防火墙</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop firewalld.service</span><br><span class="line"># 放行<span class="number">3306</span>端口</span><br></pre></td></tr></table></figure>
+<h2 id="体系架构"><a class="markdownIt-Anchor" href="#体系架构"></a> 体系架构</h2>
+<h3 id="mysql-整体架构"><a class="markdownIt-Anchor" href="#mysql-整体架构"></a> MySQL 整体架构</h3>
+<p>体系结构详解：</p>
+<ul>
+<li>第一层：<strong>网络连接层</strong>
+<ul>
+<li>一些客户端和链接服务，包含本地 Socket 通信和大多数基于客户端/服务端工具实现的 TCP/IP 通信，主要完成一些类似于连接处理、授权认证、及相关的安全方案</li>
+<li>在该层上引入了<strong>连接池</strong> Connection Pool 的概念，管理缓冲用户连接，线程处理等需要缓存的需求</li>
+<li>在该层上实现基于 SSL 的安全链接，服务器也会为安全接入的每个客户端验证它所具有的操作权限</li>
+</ul>
+</li>
+<li>第二层：<strong>核心服务层</strong>
+<ul>
+<li>查询缓存、分析器、优化器、执行器等，涵盖 MySQL 的大多数核心服务功能，所有的内置函数（日期、数学、加密函数等）
+<ul>
+<li>Management Serveices &amp; Utilities：系统管理和控制工具，备份、安全、复制、集群等</li>
+<li>SQL Interface：接受用户的 SQL 命令，并且返回用户需要查询的结果</li>
+<li>Parser：SQL 语句分析器</li>
+<li>Optimizer：查询优化器</li>
+<li>Caches &amp; Buffers：查询缓存，服务器会查询内部的缓存，如果缓存空间足够大，可以在大量读操作的环境中提升系统性能</li>
+</ul>
+</li>
+<li>所有<strong>跨存储引擎的功能</strong>在这一层实现，如存储过程、触发器、视图等</li>
+<li>在该层服务器会解析查询并创建相应的内部解析树，并对其完成相应的优化如确定表的查询顺序，是否利用索引等， 最后生成相应的执行操作</li>
+<li>MySQL 中服务器层不管理事务，<strong>事务是由存储引擎实现的</strong></li>
+</ul>
+</li>
+<li>第三层：<strong>存储引擎层</strong>
+<ul>
+<li>Pluggable Storage Engines：存储引擎接口，MySQL 区别于其他数据库的重要特点就是其存储引擎的架构模式是插件式的（存储引擎是基于表的，而不是数据库）</li>
+<li>存储引擎<strong>真正的负责了 MySQL 中数据的存储和提取</strong>，服务器通过 API 和存储引擎进行通信</li>
+<li>不同的存储引擎具有不同的功能，共用一个 Server 层，可以根据开发的需要，来选取合适的存储引擎</li>
+</ul>
+</li>
+<li>第四层：<strong>系统文件层</strong>
+<ul>
+<li>数据存储层，主要是将数据存储在文件系统之上，并完成与存储引擎的交互</li>
+<li>File System：文件系统，保存配置文件、数据文件、日志文件、错误文件、二进制文件等</li>
+</ul>
+</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--rm/Snipaste_2024-03-03_12-26-46.png" alt="" /></p>
+<h3 id="sql-执行流程"><a class="markdownIt-Anchor" href="#sql-执行流程"></a> SQL 执行流程</h3>
+<p>整体的执行流程：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--rm/Snipaste_2024-03-03_12-27-26.png" alt="" /></p>
+<h4 id="建立连接"><a class="markdownIt-Anchor" href="#建立连接"></a> 建立连接</h4>
+<h5 id="连接器"><a class="markdownIt-Anchor" href="#连接器"></a> 连接器</h5>
+<p>池化技术：对于访问数据库来说，建立连接的代价是比较昂贵的，因为每个连接对应一个用来交互的线程，频繁的创建关闭连接比较耗费资源，有必要建立数据库连接池，以提高访问的性能<br />
+连接建立 TCP 以后需要做<strong>权限验证</strong>，验证成功后可以进行执行 SQL。如果这时管理员账号对这个用户的权限做了修改，也不会影响已经存在连接的权限，只有再新建的连接才会使用新的权限设置。<br />
+MySQL 服务器可以同时和多个客户端进行交互，所以要保证每个连接会话的隔离性。</p>
+<h5 id="权限信息"><a class="markdownIt-Anchor" href="#权限信息"></a> 权限信息</h5>
+<p>grant 语句会同时修改数据表和内存，判断权限的时候使用的是内存数据。<br />
+<code>flush privileges</code> 语句本身会用数据表（磁盘）的数据重建一份内存权限数据，所以在权限数据可能存在不一致的情况下使用，这种不一致往往是由于直接用 DML 语句操作系统权限表导致的，所以尽量不要使用这类语句。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--rm/Snipaste_2024-03-03_12-28-17.png" alt="" /></p>
+<h5 id="连接状态"><a class="markdownIt-Anchor" href="#连接状态"></a> 连接状态</h5>
+<p>客户端如果长时间没有操作，连接器就会自动断开，时间是由参数 <code>wait_timeout </code>控制的，默认值是 8 小时。如果在连接被断开之后，客户端<strong>再次发送请求</strong>的话，就会收到一个错误提醒：<code>Lost connection to MySQL server during query</code></p>
+<p>数据库里面，长连接是指连接成功后，如果客户端持续有请求，则一直使用同一个连接；短连接则是指每次执行完很少的几次查询就断开连接，下次查询再重新建立一个。</p>
+<p>为了减少连接的创建，推荐使用长连接，但是<strong>过多的长连接会造成 OOM</strong>，解决方案：</p>
+<ul>
+<li>定期断开长连接，使用一段时间，或者程序里面判断执行过一个占用内存的大查询后，断开连接，之后要查询再重连</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">KILL CONNECTION id</span><br></pre></td></tr></table></figure>
+<ul>
+<li>MySQL 5.7 版本，可以在每次执行一个比较大的操作后，通过执行 mysql_reset_connection 来重新初始化连接资源，这个过程不需要重连和重新做权限验证，但是会将连接恢复到刚刚创建完时的状态</li>
+</ul>
+<p><code>SHOW PROCESSLIST</code>：查看当前 MySQL 在进行的线程，可以实时地查看 SQL 的执行情况，其中的 Command 列显示为 Sleep 的这一行，就表示现在系统里面有一个空闲连接<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--rm/Snipaste_2024-03-03_12-28-57.png" alt="" /></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID</td>
+<td>用户登录 mysql 时系统分配的 connection_id，可以使用函数 connection_id() 查看</td>
+</tr>
+<tr>
+<td>User</td>
+<td>显示当前用户，如果不是 root，这个命令就只显示用户权限范围的 sql 语句</td>
+</tr>
+<tr>
+<td>Host</td>
+<td>显示这个语句是从哪个 ip 的哪个端口上发的，可以用来跟踪出现问题语句的用户</td>
+</tr>
+<tr>
+<td>db</td>
+<td>显示这个进程目前连接的是哪个数据库</td>
+</tr>
+<tr>
+<td>Command</td>
+<td>显示当前连接的执行的命令，一般取值为休眠 Sleep、查询 Query、连接 Connect 等</td>
+</tr>
+<tr>
+<td>Time</td>
+<td>显示这个状态持续的时间，单位是秒</td>
+</tr>
+<tr>
+<td>State</td>
+<td>显示使用当前连接的 sql 语句的状态，以查询为例，需要经过 copying to tmp table、sorting result、sending data等状态才可以完成</td>
+</tr>
+<tr>
+<td>Info</td>
+<td>显示执行的 sql 语句，是判断问题语句的一个重要依据</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sending data 状态</strong>表示 MySQL 线程开始访问数据行并把结果返回给客户端，而不仅仅只是返回给客户端，是处于执行器过程中的任意阶段。由于在 Sending data 状态下，MySQL 线程需要做大量磁盘读取操作，所以是整个查询中耗时最长的状态。</p>
+<h4 id="查询缓存"><a class="markdownIt-Anchor" href="#查询缓存"></a> 查询缓存</h4>
+<h5 id="工作流程"><a class="markdownIt-Anchor" href="#工作流程"></a> 工作流程</h5>
+<p>当执行完全相同的 SQL 语句的时候，服务器就会直接从缓存中读取结果，当数据被修改，之前的缓存会失效，修改比较频繁的表不适合做查询缓存。<br />
+查询过程：</p>
+<ol>
+<li>客户端发送一条查询给服务器</li>
+<li>服务器先会检查查询缓存，如果命中了缓存，则立即返回存储在缓存中的结果（一般是 K-V 键值对），否则进入下一阶段</li>
+<li>分析器进行 SQL 分析，再由优化器生成对应的执行计划</li>
+<li>执行器根据优化器生成的执行计划，调用存储引擎的 API 来执行查询</li>
+<li>将结果返回给客户端</li>
+</ol>
+<p>大多数情况下不建议使用查询缓存，因为查询缓存往往弊大于利</p>
+<ul>
+<li>查询缓存的<strong>失效非常频繁</strong>，只要有对一个表的更新，这个表上所有的查询缓存都会被清空。因此很可能费力地把结果存起来，还没使用就被一个更新全清空了，对于更新压力大的数据库来说，查询缓存的命中率会非常低</li>
+<li>除非业务就是有一张静态表，很长时间才会更新一次，比如一个系统配置表，那这张表上的查询才适合使用查询缓存</li>
+</ul>
+<h5 id="缓存配置"><a class="markdownIt-Anchor" href="#缓存配置"></a> 缓存配置</h5>
+<ol>
+<li>查看当前 MySQL 数据库是否支持查询缓存：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;have_query_cache&#x27;</span>;	<span class="comment">-- YES</span></span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>查看当前 MySQL 是否开启了查询缓存：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;query_cache_type&#x27;</span>;	<span class="comment">-- OFF</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>参数说明：
+<ul>
+<li>OFF 或 0：查询缓存功能关闭</li>
+<li>ON 或 1：查询缓存功能打开，查询结果符合缓存条件即会缓存，否则不予缓存；可以显式指定 SQL_NO_CACHE 不予缓存</li>
+<li>DEMAND 或 2：查询缓存功能按需进行，显式指定 SQL_CACHE 的 SELECT 语句才缓存，其它不予缓存</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> SQL_CACHE id, name <span class="keyword">FROM</span> customer; <span class="comment">-- SQL_CACHE:查询结果可缓存</span></span><br><span class="line"><span class="keyword">SELECT</span> SQL_NO_CACHE id, name <span class="keyword">FROM</span> customer;<span class="comment">-- SQL_NO_CACHE:不使用查询缓存</span></span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>查看查询缓存的占用大小：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;query_cache_size&#x27;</span>;<span class="comment">-- 单位是字节 1048576 / 1024 = 1024 = 1KB</span></span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>查看查询缓存的状态变量：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;Qcache%&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--rm/Snipaste_2024-03-03_12-29-30.png" alt="" /></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Qcache_free_blocks</td>
+<td>查询缓存中的可用内存块数</td>
+</tr>
+<tr>
+<td>Qcache_free_memory</td>
+<td>查询缓存的可用内存量</td>
+</tr>
+<tr>
+<td>Qcache_hits</td>
+<td>查询缓存命中数</td>
+</tr>
+<tr>
+<td>Qcache_inserts</td>
+<td>添加到查询缓存的查询数</td>
+</tr>
+<tr>
+<td>Qcache_lowmen_prunes</td>
+<td>由于内存不足而从查询缓存中删除的查询数</td>
+</tr>
+<tr>
+<td>Qcache_not_cached</td>
+<td>非缓存查询的数量（由于 query_cache_type 设置而无法缓存或未缓存）</td>
+</tr>
+<tr>
+<td>Qcache_queries_in_cache</td>
+<td>查询缓存中注册的查询数</td>
+</tr>
+<tr>
+<td>Qcache_total_blocks</td>
+<td>查询缓存中的块总数</td>
+</tr>
+</tbody>
+</table>
+<ol start="5">
+<li>配置 my.cnf：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo chmod <span class="number">666</span> <span class="operator">/</span>etc<span class="operator">/</span>mysql<span class="operator">/</span>my.cnf</span><br><span class="line">vim my.cnf</span><br><span class="line"># mysqld中配置缓存</span><br><span class="line">query_cache_type<span class="operator">=</span><span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>重启服务既可生效，执行 SQL 语句进行验证 ，执行一条比较耗时的 SQL 语句，然后再多执行几次，查看后面几次的执行时间；获取通过查看查询缓存的缓存命中数，来判定是否走查询缓存。</p>
+<h5 id="缓存失效"><a class="markdownIt-Anchor" href="#缓存失效"></a> 缓存失效</h5>
+<p>查询缓存失效的情况：</p>
+<ul>
+<li>SQL 语句不一致，要想命中查询缓存，查询的 SQL 语句必须一致，因为<strong>缓存中 key 是查询的语句</strong>，value 是查询结构</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">from</span> tb_item;</span><br><span class="line"><span class="keyword">Select</span> <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">from</span> tb_item;	<span class="comment">-- 不走缓存，首字母不一致</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>当查询语句中有一些不确定查询时，则不会缓存，比如：now()、current_date()、curdate()、curtime()、rand()、uuid()、user()、database()</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tb_item <span class="keyword">WHERE</span> updatetime <span class="operator">&lt;</span> NOW() LIMIT <span class="number">1</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">USER</span>();</span><br><span class="line"><span class="keyword">SELECT</span> DATABASE();</span><br></pre></td></tr></table></figure>
+<ul>
+<li>不使用任何表查询语句：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="string">&#x27;A&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查询 mysql、information_schema、performance_schema 等系统表时，不走查询缓存：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> information_schema.engines;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>在<strong>跨存储引擎</strong>的存储过程、触发器或存储函数的主体内执行的查询，缓存失效</li>
+<li>如果表更改，则使用该表的<strong>所有高速缓存查询都将变为无效</strong>并从高速缓存中删除，包括使用 MERGE 映射到已更改表的表的查询，比如：INSERT、UPDATE、DELETE、ALTER TABLE、DROP TABLE、DROP DATABASE</li>
+</ul>
+<h4 id="分析器"><a class="markdownIt-Anchor" href="#分析器"></a> 分析器</h4>
+<p>没有命中查询缓存，就开始了 SQL 的真正执行，分析器会对 SQL 语句做解析。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>解析器：处理语法和解析查询，生成一颗对应的解析树。</p>
+<ul>
+<li>先做<strong>词法分析</strong>，输入的是由多个字符串和空格组成的一条 SQL 语句，MySQL 需要识别出里面的字符串分别是什么代表什么。从输入的 select 这个关键字识别出来这是一个查询语句；把字符串 t 识别成 表名 t，把字符串 id 识别成列 id</li>
+<li>然后做<strong>语法分析</strong>，根据词法分析的结果，语法分析器会根据语法规则，判断你输入的这个 SQL 语句是否满足 MySQL 语法。如果语句不对，就会收到 <code>You have an error in your SQL syntax</code> 的错误提醒</li>
+</ul>
+<p>预处理器：进一步检查解析树的合法性，比如数据表和数据列是否存在、别名是否有歧义等。</p>
+<h4 id="优化器"><a class="markdownIt-Anchor" href="#优化器"></a> 优化器</h4>
+<h5 id="成本分析"><a class="markdownIt-Anchor" href="#成本分析"></a> 成本分析</h5>
+<p>优化器是在表里面有多个索引的时候，决定使用哪个索引；或者在一个语句有多表关联（join）的时候，决定各个表的连接顺序。</p>
+<ul>
+<li>根据搜索条件找出所有可能的使用的索引</li>
+<li>成本分析，执行成本由 I/O 成本和 CPU 成本组成，计算全表扫描和使用不同索引执行 SQL 的代价</li>
+<li>找到一个最优的执行方案，用最小的代价去执行语句</li>
+</ul>
+<p>在数据库里面，扫描行数是影响执行代价的因素之一，扫描的行数越少意味着访问磁盘的次数越少，消耗的 CPU 资源越少，优化器还会结合是否使用临时表、是否排序等因素进行综合判断。</p>
+<h5 id="统计数据"><a class="markdownIt-Anchor" href="#统计数据"></a> 统计数据</h5>
+<p>MySQL 中保存着两种统计数据：</p>
+<ul>
+<li>innodb_table_stats 存储了表的统计数据，每一条记录对应着一个表的统计数据</li>
+<li>innodb_index_stats 存储了索引的统计数据，每一条记录对应着一个索引的一个统计项的数据</li>
+</ul>
+<p>MySQL 在真正执行语句之前，并不能精确地知道满足条件的记录有多少条，只能根据统计信息来估算记录，统计信息就是索引的区分度，一个索引上不同的值的个数（比如性别只能是男女，就是 2 ），称之为基数（cardinality），<strong>基数越大说明区分度越好。</strong></p>
+<p>通过<strong>采样统计</strong>来获取基数，InnoDB 默认会选择 N 个数据页，统计这些页面上的不同值得到一个平均值，然后乘以这个索引的页面数，就得到了这个索引的基数。<br />
+在 MySQL 中，有两种存储统计数据的方式，可以通过设置参数 <code>innodb_stats_persistent</code> 的值来选择：</p>
+<ul>
+<li>ON：表示统计信息会持久化存储（默认），采样页数 N 默认为 20，可以通过 <code>innodb_stats_persistent_sample_pages</code> 指定，页数越多统计的数据越准确，但消耗的资源更大</li>
+<li>OFF：表示统计信息只存储在内存，采样页数 N 默认为 8，也可以通过系统变量设置（不推荐，每次重新计算浪费资源）</li>
+</ul>
+<p>数据表是会持续更新的，两种统计信息的更新方式：</p>
+<ul>
+<li>设置 <code>innodb_stats_auto_recalc</code> 为 1，当发生变动的记录数量超过表大小的 10% 时，自动触发重新计算，不过是<strong>异步进行</strong></li>
+<li>调用 <code>ANALYZE TABLE t</code> 手动更新统计信息，只对信息做<strong>重新统计</strong>（不是重建表），没有修改数据，这个过程中加了 MDL 读锁并且是同步进行，所以会暂时阻塞系统</li>
+</ul>
+<p><strong>EXPLAIN 执行计划在优化器阶段生成</strong>，如果 explain 的结果预估的 rows 值跟实际情况差距比较大，可以执行 analyze 命令重新修正信息。</p>
+<h5 id="错选索引"><a class="markdownIt-Anchor" href="#错选索引"></a> 错选索引</h5>
+<p>采样统计本身是估算数据，或者 SQL 语句中的字段选择有问题时，可能导致 MySQL 没有选择正确的执行索引。<br />
+解决方法：</p>
+<ul>
+<li>采用 force index 强行选择一个索引</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> FORCE INDEX(name) <span class="keyword">WHERE</span> NAME<span class="operator">=</span><span class="string">&#x27;seazean&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>可以考虑修改 SQL 语句，引导 MySQL 使用期望的索引</li>
+<li>新建一个更合适的索引，来提供给优化器做选择，或删掉误用的索引</li>
+</ul>
+<h4 id="执行器"><a class="markdownIt-Anchor" href="#执行器"></a> 执行器</h4>
+<p>开始执行的时候，要先判断一下当前连接对表有没有<strong>执行查询的权限</strong>，如果没有就会返回没有权限的错误，在工程实现上，如果命中查询缓存，会在查询缓存返回结果的时候，做权限验证。如果有权限，就打开表继续执行，执行器就会根据表的引擎定义，去使用这个引擎提供的接口。</p>
+<h4 id="引擎层"><a class="markdownIt-Anchor" href="#引擎层"></a> 引擎层</h4>
+<p>Server 层和存储引擎层的交互是<strong>以记录为单位的</strong>，存储引擎会将<strong>单条记录</strong>返回给 Server 层做进一步处理，并不是直接返回所有的记录。<br />
+工作流程：</p>
+<ul>
+<li>首先根据二级索引选择扫描范围，获取第一条符合二级索引条件的记录，进行回表查询，将聚簇索引的记录返回 Server 层，由 Server 判断记录是否符合要求</li>
+<li>然后在二级索引上继续扫描下一个符合条件的记录</li>
+</ul>
+<h3 id="终止流程"><a class="markdownIt-Anchor" href="#终止流程"></a> 终止流程</h3>
+<h4 id="终止语句"><a class="markdownIt-Anchor" href="#终止语句"></a> 终止语句</h4>
+<p>终止线程中正在执行的语句：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">KILL QUERY thread_id</span><br></pre></td></tr></table></figure>
+<p>KILL 不是马上终止的意思，而是告诉执行线程这条语句已经不需要继续执行，可以开始执行停止的逻辑（类似于打断）。因为对表做增删改查操作，会在表上加 MDL 读锁，如果线程被 KILL 时就直接终止，那这个 MDL 读锁就没机会被释放了。</p>
+<p>命令 <code>KILL QUERYthread_id_A</code> 的执行流程：</p>
+<ul>
+<li>把 session A 的运行状态改成 THD::KILL_QUERY（将变量 killed 赋值为 THD::KILL_QUERY）</li>
+<li>给 session A 的执行线程发一个信号，让 session A 来处理这个 THD::KILL_QUERY 状态</li>
+</ul>
+<p>会话处于等待状态（锁阻塞），必须满足是一个可以被唤醒的等待，必须有机会去<strong>判断线程的状态</strong>，如果不满足就会造成 KILL 失败。</p>
+<p>典型场景：innodb_thread_concurrency 为 2，代表并发线程上限数设置为 2</p>
+<ul>
+<li>session A 执行事务，session B 执行事务，达到线程上限；此时 session C 执行事务会阻塞等待，session D 执行 kill query C 无效</li>
+<li>C 的逻辑是每 10 毫秒判断是否可以进入 InnoDB 执行，如果不行就调用 nanosleep 函数进入 sleep 状态，没有去判断线程状态</li>
+</ul>
+<p>补充：执行 Ctrl+C 的时候，是 MySQL 客户端另外启动一个连接，然后发送一个 KILL QUERY 命令。</p>
+<h4 id="终止连接"><a class="markdownIt-Anchor" href="#终止连接"></a> 终止连接</h4>
+<p>断开线程的连接：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">KILL CONNECTION id</span><br></pre></td></tr></table></figure>
+<p>断开连接后执行 SHOW PROCESSLIST 命令，如果这条语句的 Command 列显示 Killed，代表线程的状态是 KILL_CONNECTION，说明这个线程有语句正在执行，当前状态是停止语句执行中，终止逻辑耗时较长。</p>
+<ul>
+<li>超大事务执行期间被 KILL，这时回滚操作需要对事务执行期间生成的所有新数据版本做回收操作，耗时很长</li>
+<li>大查询回滚，如果查询过程中生成了比较大的临时文件，删除临时文件可能需要等待 IO 资源，导致耗时较长</li>
+<li>DDL 命令执行到最后阶段被 KILL，需要删除中间过程的临时文件，也可能受 IO 资源影响耗时较久</li>
+</ul>
+<p>总结：KILL CONNECTION 本质上只是把客户端的 SQL 连接断开，后面的终止流程还是要走 KILL QUERY。<br />
+一个事务被 KILL 之后，持续处于回滚状态，不应该强行重启整个 MySQL 进程，应该等待事务自己执行完成，因为重启后依然继续做回滚操作的逻辑。</p>
+<h2 id="常用工具"><a class="markdownIt-Anchor" href="#常用工具"></a> 常用工具</h2>
+<h3 id="mysql-2"><a class="markdownIt-Anchor" href="#mysql-2"></a> mysql</h3>
+<p>mysql 不是指 mysql 服务，而是指 mysql 的客户端工具。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql [options] [database]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>-u --user=name：指定用户名</li>
+<li>-p --password[=name]：指定密码</li>
+<li>-h --host=name：指定服务器IP或域名</li>
+<li>-P --port=#：指定连接端口</li>
+<li>-e --execute=name：执行SQL语句并退出，在控制台执行SQL语句，而不用连接到数据库执行</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql <span class="operator">-</span>h <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span> <span class="operator">-</span>P <span class="number">3306</span> <span class="operator">-</span>u root <span class="operator">-</span>p</span><br><span class="line">mysql <span class="operator">-</span>uroot <span class="operator">-</span>p2143 db01 <span class="operator">-</span>e &quot;select * from tb_book&quot;;</span><br></pre></td></tr></table></figure>
+<h3 id="mysqladmin"><a class="markdownIt-Anchor" href="#mysqladmin"></a> mysqladmin</h3>
+<p>mysqladmin 是一个执行<strong>管理</strong>操作的客户端程序，用来检查服务器的配置和当前状态、创建并删除数据库等。<br />
+通过 <code>mysqladmin --help</code> 指令查看帮助文档</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqladmin <span class="operator">-</span>uroot <span class="operator">-</span>p2143 <span class="keyword">create</span> <span class="string">&#x27;test01&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="mysqlbinlog"><a class="markdownIt-Anchor" href="#mysqlbinlog"></a> mysqlbinlog</h3>
+<p>服务器生成的日志文件以二进制格式保存，如果需要检查这些文本，就要使用 mysqlbinlog <strong>日志管理</strong>工具。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqlbinlog [options]  log<span class="operator">-</span>files1 log<span class="operator">-</span>files2 ...</span><br></pre></td></tr></table></figure>
+<ul>
+<li>-d --database=name：指定数据库名称，只列出指定的数据库相关操作</li>
+<li>-o --offset=#：忽略掉日志中的前 n 行命令。</li>
+<li>-r --result-file=name：将输出的文本格式日志输出到指定文件。</li>
+<li>-s --short-form：显示简单格式，省略掉一些信息。</li>
+<li>–start-datatime=date1 --stop-datetime=date2：指定日期间隔内的所有日志</li>
+<li>–start-position=pos1 --stop-position=pos2：指定位置间隔内的所有日志</li>
+</ul>
+<h3 id="mysqldump"><a class="markdownIt-Anchor" href="#mysqldump"></a> mysqldump</h3>
+<h4 id="命令介绍"><a class="markdownIt-Anchor" href="#命令介绍"></a> 命令介绍</h4>
+<p>mysqldump 客户端工具用来备份数据库或在不同数据库之间进行数据迁移，备份内容包含创建表，及插入表的 SQL 语句。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mysqldump [options] db_name [tables]</span><br><span class="line">mysqldump [options] <span class="comment">--database/-B db1 [db2 db3...]</span></span><br><span class="line">mysqldump [options] <span class="comment">--all-databases/-A</span></span><br></pre></td></tr></table></figure>
+<p>连接选项：</p>
+<ul>
+<li>-u --user=name：指定用户名</li>
+<li>-p --password[=name]：指定密码</li>
+<li>-h --host=name：指定服务器 IP 或域名</li>
+<li>-P --port=#：指定连接端口</li>
+</ul>
+<p>输出内容选项：</p>
+<ul>
+<li>–add-drop-database：在每个数据库创建语句前加上 Drop database 语句</li>
+<li>–add-drop-table：在每个表创建语句前加上 Drop table 语句 , 默认开启，不开启 (–skip-add-drop-table)</li>
+<li>-n --no-create-db：不包含数据库的创建语句</li>
+<li>-t --no-create-info：不包含数据表的创建语句</li>
+<li>-d --no-data：不包含数据</li>
+<li>-T, --tab=name：自动生成两个文件：一个 .sql 文件，创建表结构的语句；一个 .txt 文件，数据文件，相当于 select into outfile</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>p2143 db01 tb_book <span class="comment">--add-drop-database --add-drop-table &gt; a</span></span><br><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>p2143 <span class="operator">-</span>T <span class="operator">/</span>tmp test city</span><br></pre></td></tr></table></figure>
+<h4 id="数据备份"><a class="markdownIt-Anchor" href="#数据备份"></a> 数据备份</h4>
+<p>命令行方式：</p>
+<ul>
+<li>备份命令：<code>mysqldump -u root -p 数据库名称 &gt; 文件保存路径</code></li>
+<li>恢复
+<ol>
+<li>登录MySQL数据库：<code>mysql -u root p</code></li>
+<li>删除已经备份的数据库</li>
+<li>重新创建与备份数据库名称相同的数据库</li>
+<li>使用该数据库</li>
+<li>导入文件执行：source 备份文件全路径</li>
+</ol>
+</li>
+</ul>
+<p>图形化界面：</p>
+<ul>
+<li>备份</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--rm/Snipaste_2024-03-03_12-29-59.png" alt="" /></p>
+<ul>
+<li>恢复</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--rm/Snipaste_2024-03-03_12-30-06.png" alt="" /></p>
+<h3 id="mysqlimportsource"><a class="markdownIt-Anchor" href="#mysqlimportsource"></a> mysqlimport/source</h3>
+<p>mysqlimport 是客户端数据导入工具，用来导入mysqldump 加 -T 参数后导出的文本文件。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqlimport [options]  db_name  textfile1  [textfile2...]</span><br></pre></td></tr></table></figure>
+<p>示例：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqlimport <span class="operator">-</span>uroot <span class="operator">-</span>p2143 test <span class="operator">/</span>tmp<span class="operator">/</span>city.txt</span><br></pre></td></tr></table></figure>
+<p>导入 sql 文件，可以使用 MySQL 中的 source 指令 :</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source 文件全路径</span><br></pre></td></tr></table></figure>
+<h3 id="mysqlshow"><a class="markdownIt-Anchor" href="#mysqlshow"></a> mysqlshow</h3>
+<p>mysqlshow 客户端对象查找工具，用来很快地查找存在哪些数据库、数据库中的表、表中的列或者索引等统计信息。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqlshow [options] [db_name [table_name [col_name]]]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>–count：显示数据库及表的统计信息（数据库，表 均可以不指定）</li>
+<li>-i：显示指定数据库或者指定表的状态信息</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#查询每个数据库的表的数量及表中记录的数量</span><br><span class="line">mysqlshow <span class="operator">-</span>uroot <span class="operator">-</span>p1234 <span class="comment">--count</span></span><br><span class="line">#查询test库中每个表中的字段书，及行数</span><br><span class="line">mysqlshow <span class="operator">-</span>uroot <span class="operator">-</span>p1234 test <span class="comment">--count</span></span><br><span class="line">#查询test库中book表的详细情况</span><br><span class="line">mysqlshow <span class="operator">-</span>uroot <span class="operator">-</span>p1234 test book <span class="comment">--count</span></span><br></pre></td></tr></table></figure>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://strivingto.top/2023/05/11/MySQL--%E5%85%A5%E9%97%A8/" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://strivingto.top/2023/05/11/MySQL--%E5%85%A5%E9%97%A8/"/>
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/05/15/MySQL--%E5%8D%95%E8%A1%A8%E6%93%8D%E4%BD%9C/">MySQL--单表操作</a></div><div class="item" id="next"></div></section></div>
+
+  <script>
+    let tianliGPT_postSelector = 'article.content';
+    let tianliGPT_key = '9ba935841efd4f2ee0fd';
+    let tianliGPT_typingAnimate = 'true';
+    let tianliGPT_wordLimit = 100;
+  </script>
+<script defer src="https://cdn1.tianli0.top/gh/zhheo/Post-Abstract-AI@0.15.2/tianli_gpt.min.js"></script>
+
+
+<div class="related-wrap" id="related-posts">
+    <section class='header'>
+      <div class='title cap theme'>您可能感兴趣的文章</div>
+    </section>
+    <section class='body'>
+    <div class="related-posts"><a class="item" href="\2024\01\29\MySQL--Innodb 引擎\" title="MySQL--Innodb引擎"><span class="title">MySQL--Innodb引擎</span></a><a class="item" href="\2023\05\21\MySQL--存储引擎\" title="MySQL--存储引擎"><span class="title">MySQL--存储引擎</span></a><a class="item" href="\2024\01\27\MySQL--SQL 优化\" title="MySQL--SQL优化"><span class="title">MySQL--SQL优化</span></a><a class="item" href="\2023\05\15\MySQL--单表操作\" title="MySQL--单表操作"><span class="title">MySQL--单表操作</span></a><a class="item" href="\2024\01\22\MySQL--索引\" title="MySQL--索引"><span class="title">MySQL--索引</span></a></div></section></div>
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="sitemap"><div class="sitemap-group"><span class="fs15">博客</span><a href="/">首页</a><a href="/categories/">分类</a><a href="/tags/">标签</a><a href="/archives/">归档</a></div><div class="sitemap-group"><span class="fs15">项目</span><a href="/">暂无</a></div><div class="sitemap-group"><span class="fs15">社交</span><a href="/friends/">友链</a></div><div class="sitemap-group"><span class="fs15">更多</span><a href="/about/">关于本站</a><a target="_blank" rel="noopener" href="https://github.com/GIMME-JIA">GitHub</a></div></div><div class="text"><center>
+  本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">[CC BY-NC-SA 4.0]</a> 许可协议，转载请注明出处。<br/>
+  <!--不蒜子计数器-->
+  <script defer src="https://busuanzi.9420.ltd/js"></script>
+  <!--添加一个访问量-->
+<p>本页总阅读 <span id="busuanzi_page_pv"></span> 次       页总访客 <span id="busuanzi_page_uv"></span> 人<br />
+本站总访问 <span id="busuanzi_site_pv"></span> 次       本站总访客 <span id="busuanzi_site_uv"></span> 人</p>
+</center>
+</div></footer>
+<div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+<div class="main-mask" onclick="sidebar.toggle()"></div></div></div><div class="scripts">
+<script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.26.8';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.26.8';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js","marked":"/js/plugins/marked.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://cdn.bootcdn.net/ajax/libs/vanilla-lazyload/17.8.4/lazyload.min.js","transition":"fade"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://cdn.bootcdn.net/ajax/libs/scrollReveal.js/4.0.9/scrollreveal.min.js","distance":"16px","duration":800,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","flying_pages":"https://cdn.bootcdn.net/ajax/libs/flying-pages/2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.umd.min.js","css":"https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.min.css","selector":null});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied","toast":"复制成功"});
+  }
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.26.8" async></script>
+
+<!-- optional -->
+
+
+
+
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@v9/dist/mermaid.min.js"></script>
+<script>
+  var mermaid_config = {
+    startOnLoad: true,
+    theme:
+      "auto" == "auto" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "neutral",
+    logLevel: 3,
+    themeVariables: {
+      darkMode: true
+    },
+    flowchart: {
+      useMaxWidth: false,
+      htmlLabels: true,
+      curve: "linear"
+    },
+    gantt: {
+      axisFormat: "%Y/%m/%d"
+    },
+    sequence: {
+      actorMargin: 50
+    }
+  }
+  if (window.mermaid) {
+    mermaid.initialize(mermaid_config);
+  }
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

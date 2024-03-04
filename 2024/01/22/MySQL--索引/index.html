@@ -1,0 +1,876 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.26.8" theme-name="Stellar" theme-version="1.26.8">
+  
+  <meta name="generator" content="Hexo 6.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>MySQL--索引 - 小破站</title>
+
+  
+    <meta name="description" content="索引概述 MySQL 官方对索引的定义为：索引（index）是帮助 MySQL 高效获取数据的一种数据结构，本质是排好序的快速查找数据结构。在表数据之外，数据库系统还维护着满足特定查找算法的数据结构，这些数据结构以某种方式指向数据， 这样就可以在这些数据结构上实现高级查找算法，这种数据结构就是索引。 索引是在存储引擎层实现的，所以并没有统一的索引标准，即不同存储引擎的索引的工作方式并不一样。 索">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL--索引">
+<meta property="og:url" content="https://strivingto.top/2024/01/22/MySQL--%E7%B4%A2%E5%BC%95/index.html">
+<meta property="og:site_name" content="小破站">
+<meta property="og:description" content="索引概述 MySQL 官方对索引的定义为：索引（index）是帮助 MySQL 高效获取数据的一种数据结构，本质是排好序的快速查找数据结构。在表数据之外，数据库系统还维护着满足特定查找算法的数据结构，这些数据结构以某种方式指向数据， 这样就可以在这些数据结构上实现高级查找算法，这种数据结构就是索引。 索引是在存储引擎层实现的，所以并没有统一的索引标准，即不同存储引擎的索引的工作方式并不一样。 索">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sy/Snipaste_2024-03-03_12-32-08.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sy/2.png">
+<meta property="og:image" content="https://camo.githubusercontent.com/bf3a0dc77ea66372d3501561d233f48111693d75551460e36f3288d0442b2851/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842322e706e67#from=url&amp;id=ZOQ8t&amp;originHeight=169&amp;originWidth=396&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/60d0b0755bbc3303d23131345c9bd37c0b2b3df378f9f1feb860dd6f40ae61ae/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842332e706e67#from=url&amp;id=wC4Ke&amp;originHeight=214&amp;originWidth=443&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/0e9162a675705ce71a7490ef73ea13ad87d3cc6974bd79ff43a5d092ca07f8f3/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842342e706e67#from=url&amp;id=FzlFS&amp;originHeight=212&amp;originWidth=460&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/20e2df17629569a0b1036cc6dc5dd93afac5cdd038f264784125e7c376980379/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842352e706e67#from=url&amp;id=yG0ou&amp;originHeight=206&amp;originWidth=616&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/0da80fb3b2ba5577a543bcbe183f37b4fcf46ff03fed782290b6a9d5dadb6e87/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842362e706e67#from=url&amp;id=g3kXq&amp;originHeight=207&amp;originWidth=674&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/4e01024a60f4f8344a6841b762fdc74fd2fa98a54c66a232e04d8180b1b4862c/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842372e706e67#from=url&amp;id=MXDmk&amp;originHeight=177&amp;originWidth=671&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/58d8526fa4bf6ffa747da475806cbd69d5af9b4af9ba3eb3da88032eb4b68bbb/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842382e706e67#from=url&amp;id=eJAmv&amp;originHeight=298&amp;originWidth=669&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/e262fb1f119d3f8cac4dfde583c05db2d415fa7755b330f32d651b5c0f87edfc/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f254537254234254132254535254243253935254537253941253834254535253845253946254537253930253836312e706e67#from=url&amp;id=bUR7g&amp;originHeight=343&amp;originWidth=1008&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sy/3.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sy/4.png">
+<meta property="og:image" content="https://camo.githubusercontent.com/e5bf7de01bb46c73aa00352882c7fb94d58ab65274ad5549cdd554d893b15e5a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f254537254234254132254535254243253935254537253941253834254535253845253946254537253930253836322e706e67#from=url&amp;id=U5XqO&amp;originHeight=376&amp;originWidth=1022&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/4ec94d7074a6bd87810af6488a8f85203c85710e0c6dc4be68f9fc24d6f02894/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545372542422538342545352539302538382545372542342541322545352542432539352545352539422542452e706e67#from=url&amp;id=fvAEl&amp;originHeight=672&amp;originWidth=2282&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/326301c1118f236bb5480fd369ff8f71fa37dba474a77a5475cb6901d3a70785/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c2545362539462541352545372539432538422545372542342541322545352542432539352545342542442542462545372539342541382545362538332538352545352538362542352e706e67#from=url&amp;id=LuFIG&amp;originHeight=208&amp;originWidth=452&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sy/5.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sy/6.png">
+<meta property="og:image" content="https://camo.githubusercontent.com/2d9c54f8598504a037680a0a21bd76aeab949cfa87af738be75bc2feb709a86d/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d496e6e6f44422545382538312539412545372542302538372545352539322538432545382542452538352545352538412541392545372542342541322545352542432539352545372542422539332545362539452538342e706e67#from=url&amp;id=oZYj9&amp;originHeight=309&amp;originWidth=1168&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/70338be039e94a8ceb0353fb819c067f1bd54b3e485579fd27a623179419a14d/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545382538312539412545372542302538372545372542342541322545352542432539352545352539322538432545382542452538352545352538412541392545372542342541322545352542432539352545362541332538302545392539342538312545362539352542302545362538442541452545352539422542452e6a7067#from=url&amp;id=GEuYi&amp;originHeight=543&amp;originWidth=987&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/6b268087c05c85daeebedca51f8a58a476b8997aad0df3d97bfb28e0766cf79a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4d794953414d2545342542382542422545392539342541452545352539322538432545382542452538352545352538412541392545372542342541322545352542432539352545372542422539332545362539452538342e706e67#from=url&amp;id=uLUjp&amp;originHeight=510&amp;originWidth=1454&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/9b9528bcdfde75e168570b905df667f1bf2cdabf2f13bd4ae009e37550112938/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254537254234254132254535254243253935312e706e67#from=url&amp;id=iqURC&amp;originHeight=123&amp;originWidth=1308&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/be9b656fddcb5393ee12b77cdff8efdb1799ec5416f4f44b583d2e5ce8816d4a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254537254234254132254535254243253935362e706e67#from=url&amp;id=Z4Pp6&amp;originHeight=116&amp;originWidth=1008&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/fa5fc53c1649ed5822251e25e61a2fb1735f623f7e2059e34766f17c308b3bde/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254537254234254132254535254243253935372e706e67#from=url&amp;id=udbGP&amp;originHeight=127&amp;originWidth=1343&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/aaef4f06de002e28ac4d899e06d357ddcb00370ad0e8355bdd20b9a7b2fac6e7/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c25453425424425424625453725393425413825453725423425413225453525424325393531302e706e67#from=url&amp;id=YSwW0&amp;originHeight=120&amp;originWidth=1095&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/d90e83715550146984de8acda4e7a0f6ac2f4e40f8836a86a5c7a9619e2e67a3/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c25453425424425424625453725393425413825453725423425413225453525424325393531312e706e67#from=url&amp;id=L82Gw&amp;originHeight=121&amp;originWidth=1273&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/b261923e470a1ca1babfc4769082f11beb4d4f124f73b27a7e52773e1e83333f/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c25453425424425424625453725393425413825453725423425413225453525424325393531322e706e67#from=url&amp;id=MW9SO&amp;originHeight=253&amp;originWidth=1350&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/f3f25f7cd31dd74688fcd85f73999fe9658f9e8330fa211ea10270702c486918/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c25453425424425424625453725393425413825453725423425413225453525424325393531332e706e67#from=url&amp;id=L0U6i&amp;originHeight=128&amp;originWidth=1278&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/5a5ae80a8fdac51b9cb9883cd46e2489458bbef352675308681483c2a7a97f56/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de7b4a2e5bc95e5a4b1e69588e5ba95e5b182e58e9fe79086312e706e67#from=url&amp;id=mIXII&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/c1488324ec7cdbd519ca0cc1b8e5b4d8161ad2df30a4c29ebd0bd0abe99883da/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de7b4a2e5bc95e5a4b1e69588e5ba95e5b182e58e9fe79086322e706e67#from=url&amp;id=crSui&amp;originHeight=249&amp;originWidth=694&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/a411862fe0a971d563851f973ea6be885f5d7b2b02ce9d498f12ff47a87ad31a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254537254234254132254535254243253935254535254134254231254536253935253838254535254241253935254535254231253832254535253845253946254537253930253836332e706e67#from=url&amp;id=RsD3f&amp;originHeight=130&amp;originWidth=438&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/673f2290f6a0f393a1333e9d8df5c006d1ae74e7aa317a6b00debed6862310fe/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254536253846253930254537254134254241312e706e67#from=url&amp;id=yM0Hk&amp;originHeight=119&amp;originWidth=1068&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/13ebfe585a2c796499b7fb759bc81bf89fea5cd1dbfe5c170f196f68e4a812a9/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254536253846253930254537254134254241322e706e67#from=url&amp;id=w3Q7P&amp;originHeight=117&amp;originWidth=1207&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/b9398811ce81f67fde56ad116c2a7f47a2d3a48d9b4d4d5727ff424263452775/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254536253846253930254537254134254241332e706e67#from=url&amp;id=tX93K&amp;originHeight=123&amp;originWidth=1210&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/2aaff590c95462577ffbaa0fc88aa06fe40767a8f8e1e97e0c71b37c6d564fe2/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545342542382538442545342542442542462545372539342541382545372542342541322545352542432539352545342542382538422545362538452541382e706e67#from=url&amp;id=aNLnC&amp;originHeight=323&amp;originWidth=740&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/8c14b3e49ad55056f60d24878cca503ee3da8b7c053e02b2cc9315defb5d2e55/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545342542442542462545372539342541382545372542342541322545352542432539352545342542382538422545362538452541382e706e67#from=url&amp;id=DVoVn&amp;originHeight=323&amp;originWidth=741&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/845b4e5aa5ff06311703341aad05b2046bedcf5ac29393604bc67a173e687e7d/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254537254234254132254535254243253935254534254238253842254536253845254138254534254243253938254535253843253936312e706e67#from=url&amp;id=KDmDu&amp;originHeight=432&amp;originWidth=1084&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/5e5edc4bc6177dfe4b9820dc8e802583fde67b25c7910b041d29356718612545/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254537254234254132254535254243253935254534254238253842254536253845254138254534254243253938254535253843253936322e706e67#from=url&amp;id=FkuSL&amp;originHeight=440&amp;originWidth=1058&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="article:published_time" content="2024-01-22T02:41:02.000Z">
+<meta property="article:modified_time" content="2024-03-04T02:55:03.952Z">
+<meta property="article:author" content="JIA">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://strivingto.top/assets/post/MySQL--sy/Snipaste_2024-03-03_12-32-08.png">
+  
+  
+  
+  <meta name="keywords" content="MySQL">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.26.8">
+
+  
+    <link rel="shortcut icon" href="https://i.ibb.co/t8bH857/avatar.png">
+  
+
+  
+
+  
+  
+</head>
+<body>
+
+<div class="l_body content tech" id="start" layout="post" ><aside class="l_left"><div class="sidebar-container sidebar-blur">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://i.ibb.co/t8bH857/avatar.png(/)" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">JIA</div><div class="sub normal cap">种一棵树最好的时间是十年前</div><div class="sub hover cap" style="opacity:0"> 其次是现在</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"><a class="nav-item active" title="主页" href="/" style="color:#1BCDFC"><span>主页</span></a><a class="nav-item" title="友链" href="/friends/" style="color:#F44336"><span>友链</span></a><a class="nav-item" title="关于" href="/about/" style="color:#F44336"><span>关于</span></a></nav>
+</div>
+<div class="widgets">
+
+<widget class="widget-wrapper toc single" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E6%A6%82%E8%BF%B0"><span class="toc-text"> 索引概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E7%BB%93%E6%9E%84"><span class="toc-text"> 索引结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%A1%B5"><span class="toc-text"> 数据页</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#b-tree"><span class="toc-text"> B-Tree</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#btree"><span class="toc-text"> B+Tree</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mysql-%E5%AF%B9-btree-%E7%9A%84%E4%BC%98%E5%8C%96"><span class="toc-text"> MySQL 对 B+Tree 的优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E7%BB%B4%E6%8A%A4%E4%B8%8D%E5%AE%8C%E5%85%A8%E7%90%86%E8%A7%A3"><span class="toc-text"> 索引维护（不完全理解*）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%80%83%E9%A2%98"><span class="toc-text"> 常考题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E5%88%86%E7%B1%BB"><span class="toc-text"> 索引分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E8%AF%AD%E6%B3%95"><span class="toc-text"> 索引语法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8"><span class="toc-text"> 基本使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%B4%A2%E5%BC%95%E4%B8%8D%E7%90%86%E8%A7%A3"><span class="toc-text"> 查看索引（不理解）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%81%9A%E7%B0%87-%E9%9D%9E%E8%81%9A%E7%B0%87"><span class="toc-text"> 聚簇 &amp; 非聚簇</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8D%E5%90%8C%E5%BC%95%E6%93%8E%E4%B8%8B%E7%9A%84%E8%81%9A%E7%B0%87%E5%AF%B9%E6%AF%94"><span class="toc-text"> 不同引擎下的聚簇对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#innodb"><span class="toc-text"> Innodb</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-text"> 概述</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95"><span class="toc-text"> 聚簇索引</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%9D%9E%E8%81%9A%E7%B0%87%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95"><span class="toc-text"> 非聚簇（二级）索引</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E5%AE%9E%E7%8E%B0"><span class="toc-text"> 索引实现</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#myisam"><span class="toc-text"> MyISAM</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%9D%9E%E8%81%9A%E7%B0%87"><span class="toc-text"> 非聚簇</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E5%AE%9E%E7%8E%B0-2"><span class="toc-text"> 索引实现</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E4%BD%BF%E7%94%A8"><span class="toc-text"> 索引使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E5%A4%B1%E6%95%88%E6%83%85%E5%86%B5"><span class="toc-text"> 索引的失效情况</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%B1%E6%95%88%E6%83%85%E5%86%B5%E5%8F%8A%E5%88%86%E6%9E%90"><span class="toc-text"> 失效情况及分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9D%E8%83%8C%E6%9C%80%E5%B7%A6%E5%89%8D%E7%BC%80%E6%B3%95%E5%88%99"><span class="toc-text"> 违背最左前缀法则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8C%83%E5%9B%B4%E6%9F%A5%E8%AF%A2"><span class="toc-text"> 范围查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E6%88%96%E8%BF%90%E7%AE%97%E6%93%8D%E4%BD%9C"><span class="toc-text"> 函数或运算操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%8D%E5%8A%A0%E5%8D%95%E5%BC%95%E5%8F%B7"><span class="toc-text"> 字符串不加单引号</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E9%9B%86%E4%B8%8D%E5%90%8C"><span class="toc-text"> 字符集不同</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%A8-or-%E5%88%86%E5%89%B2%E6%9D%A1%E4%BB%B6"><span class="toc-text"> 用 OR 分割条件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%A5-%E5%BC%80%E5%A4%B4%E7%9A%84-like-%E6%A8%A1%E7%B3%8A%E6%9F%A5%E8%AF%A2"><span class="toc-text"> 以 % 开头的 LIKE 模糊查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%88%86%E5%B8%83%E5%BD%B1%E5%93%8D"><span class="toc-text"> 数据分布影响</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88%E5%8E%9F%E7%90%86"><span class="toc-text"> 索引失效原理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96"><span class="toc-text"> 索引优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#sql-%E6%8F%90%E7%A4%BA"><span class="toc-text"> SQL 提示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A6%86%E7%9B%96%E7%B4%A2%E5%BC%95"><span class="toc-text"> 覆盖索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E4%B8%8B%E6%8E%A8"><span class="toc-text"> 索引下推</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%BC%80%E7%B4%A2%E5%BC%95"><span class="toc-text"> 前缀索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E5%90%88%E5%B9%B6%E4%B8%8D%E7%90%86%E8%A7%A3"><span class="toc-text"> 索引合并（不理解）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-text"> 索引设计原则</span></a></li></ol></div></div></widget>
+
+
+
+
+
+
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2024/01/24/MySQL--%E9%AB%98%E7%BA%A7%E7%BB%93%E6%9E%84/"><span class="title">MySQL--高级结构</span></a><a class="item title active" href="/2024/01/22/MySQL--%E7%B4%A2%E5%BC%95/"><span class="title">MySQL--索引</span><svg class="active-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M21 11.098v4.993c0 3.096 0 4.645-.734 5.321c-.35.323-.792.526-1.263.58c-.987.113-2.14-.907-4.445-2.946c-1.02-.901-1.529-1.352-2.118-1.47a2.225 2.225 0 0 0-.88 0c-.59.118-1.099.569-2.118 1.47c-2.305 2.039-3.458 3.059-4.445 2.945a2.238 2.238 0 0 1-1.263-.579C3 20.736 3 19.188 3 16.091v-4.994C3 6.81 3 4.666 4.318 3.333C5.636 2 7.758 2 12 2c4.243 0 6.364 0 7.682 1.332C21 4.665 21 6.81 21 11.098" opacity=".5"/><path fill="currentColor" d="M9 5.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5z"/></svg></a><a class="item title" href="/2023/05/21/MySQL--%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/"><span class="title">MySQL--存储引擎</span></a><a class="item title" href="/2023/05/15/MySQL--%E5%8D%95%E8%A1%A8%E6%93%8D%E4%BD%9C/"><span class="title">MySQL--单表操作</span></a><a class="item title" href="/2023/05/16/MySQL--%E5%A4%9A%E8%A1%A8%E6%93%8D%E4%BD%9C/"><span class="title">MySQL--多表操作</span></a><a class="item title" href="/2023/05/11/MySQL--%E5%85%A5%E9%97%A8/"><span class="title">MySQL--入门</span></a><a class="item title" href="/2024/01/26/MySQL--%E9%94%81%E6%9C%BA%E5%88%B6/"><span class="title">MySQL--锁机制</span></a><a class="item title" href="/2024/01/31/MySQL--%E8%BF%90%E7%BB%B4/"><span class="title">MySQL--运维</span></a><a class="item title" href="/2024/01/29/MySQL--Innodb%20%E5%BC%95%E6%93%8E/"><span class="title">MySQL--Innodb引擎</span></a><a class="item title" href="/2024/01/27/MySQL--SQL%20%E4%BC%98%E5%8C%96/"><span class="title">MySQL--SQL优化</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/blog/SOZjJe.jpg">
+  <div class="content">
+    
+<div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2024-01-22T02:41:02.000Z">2024-01-22</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2024-03-04T02:55:03.952Z">2024-03-04</time></span></div></div>
+</div>
+
+    
+    <div class="bottom">
+      <div class="text-area">
+        <h1 class="text title"><span>MySQL--索引</span></h1>
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content "><h2 id="索引概述"><a class="markdownIt-Anchor" href="#索引概述"></a> 索引概述</h2>
+<p>MySQL 官方对索引的定义为：索引（index）是帮助 MySQL 高效获取数据的一种数据结构，<strong>本质是排好序的快速查找数据结构</strong>。在表数据之外，数据库系统还维护着满足特定查找算法的数据结构，这些数据结构以某种方式指向数据， 这样就可以在这些数据结构上实现高级查找算法，这种数据结构就是索引。<br />
+<strong>索引是在存储引擎层实现的</strong>，所以并没有统一的索引标准，即不同存储引擎的索引的工作方式并不一样。<br />
+索引使用：一张数据表，用于保存数据；一个索引配置文件，用于保存索引；每个索引都指向了某一个数据 。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sy/Snipaste_2024-03-03_12-32-08.png" alt="" /></p>
+<p>左边是数据表，一共有两列七条记录，最左边的是数据记录的物理地址（注意逻辑上相邻的记录在磁盘上也并不是一定物理相邻的）。为了加快 Col2 的查找，可以维护一个右边所示的二叉查找树，每个节点分别包含索引键值和一个指向对应数据的物理地址的指针，这样就可以运用二叉查找快速获取到相应数据。<br />
+索引的优点：</p>
+<ul>
+<li>类似于书籍的目录索引，提高数据检索的效率，降低数据库的 IO 成本</li>
+<li>通过索引列对数据进行排序，降低数据排序的成本，降低 CPU 的消耗</li>
+</ul>
+<p>索引的缺点：</p>
+<ul>
+<li>一般来说索引本身也很大，不可能全部存储在内存中，因此索引往往以索引文件的形式<strong>存储在磁盘</strong>上</li>
+<li>虽然索引大大提高了查询效率，同时却也降低更新表的速度。对表进行 INSERT、UPDATE、DELETE 操作，MySQL 不仅要保存数据，还要保存一下索引文件每次更新添加了索引列的字段，还会调整因为更新所带来的键值变化后的索引信息，<strong>但是更新数据也需要先从数据库中获取</strong>，索引加快了获取速度，所以可以相互抵消一下。</li>
+<li>索引会影响到 WHERE 的查询条件和排序 ORDER BY 两大功能</li>
+</ul>
+<h2 id="索引结构"><a class="markdownIt-Anchor" href="#索引结构"></a> 索引结构</h2>
+<h3 id="数据页"><a class="markdownIt-Anchor" href="#数据页"></a> 数据页</h3>
+<p><strong>文件系统的最小单元是块（block）</strong>，一个块的大小是 4K，系统从磁盘读取数据到内存时是以磁盘块为基本单位的，位于同一个磁盘块中的数据会被一次性读取出来，而不是需要什么取什么。<br />
+InnoDB 存储引擎中有页（Page）的概念，<strong>页是 MySQL 磁盘管理的最小单位。</strong></p>
+<ul>
+<li><strong>InnoDB 存储引擎中默认每个页的大小为 16KB，索引中一个节点就是一个数据页</strong>，所以会一次性读取 16KB 的数据到内存</li>
+<li>InnoDB 引擎将若干个地址连接磁盘块，以此来达到页的大小 16KB</li>
+<li>在查询数据时如果一个页中的每条数据都能有助于定位数据记录的位置，这将会减少磁盘 I/O 次数，提高查询效率</li>
+</ul>
+<p>超过 16KB 的一条记录，主键索引页只会存储部分数据和指向<strong>溢出页</strong>的指针，剩余数据都会分散存储在溢出页中。<br />
+数据页物理结构，从上到下：</p>
+<ul>
+<li><strong>File Header</strong>：上一页和下一页的指针、该页的类型（索引页、数据页、日志页等）、<strong>校验和</strong>、LSN（最近一次修改当前页面时的系统 lsn 值，事务持久性部分详解）等信息</li>
+<li><strong>Page Header</strong>：记录状态信息</li>
+<li><strong>Infimum + Supremum</strong>：当前页的最小记录和最大记录（头尾指针），Infimum 所在分组只有一条记录，Supremum 所在分组可以有 1 ~ 8 条记录，剩余的分组可以有 4 ~ 8 条记录</li>
+<li><strong>User Records</strong>：存储数据的记录</li>
+<li><strong>Free Space</strong>：尚未使用的存储空间</li>
+<li><strong>Page Directory</strong>：分组的目录，可以通过目录快速定位（二分法）数据的分组</li>
+<li><strong>File Trailer</strong>：检验和字段，在刷脏过程中，页首和页尾的校验和一致才能说明页面刷新成功，二者不同说明刷新期间发生了错误；LSN 字段，也是用来校验页面的完整性</li>
+</ul>
+<p>数据页中包含数据行，数据的存储是基于数据行的，数据行有 next_record 属性指向下一个行数据，所以是可以遍历的，但是一组数据至多 8 个行，通过 Page Directory 先定位到组，然后遍历获取所需的数据行即可。<br />
+数据行中有三个隐藏字段：trx_id、roll_pointer、row_id（在事务章节会详细介绍它们的作用）。</p>
+<h3 id="b-tree"><a class="markdownIt-Anchor" href="#b-tree"></a> B-Tree</h3>
+<p>BTree 的索引类型是基于 B+Tree 树型数据结构的，B+Tree 又是 BTree 数据结构的变种，用在数据库和操作系统中的文件系统，特点是能够保持数据稳定有序。<br />
+BTree 又叫<strong>多路平衡搜索树</strong>，一颗 m 叉的 BTree 特性如下：</p>
+<ol>
+<li>树中每个节点最多包含 m 个孩子</li>
+<li>除根节点与叶子节点外，每个节点至少有 [ceil(m/2)] 个孩子</li>
+<li>若根节点不是叶子节点，则至少有两个孩子</li>
+<li>所有的叶子节点都在同一层</li>
+<li>每个非叶子节点由 n 个 key 与 n+1 个指针组成，其中** [ceil(m/2)-1] &lt;= n &lt;= m-1**</li>
+</ol>
+<p>5 叉树，key 的数量 [ceil(m/2)-1] &lt;= n &lt;= m-1 为 2 &lt;= n &lt;=4 ，当 n&gt;4 时中间节点分裂到父节点，两边节点分裂<br />
+插入 C N G A H E K Q M F W L T Z D P R X Y S 数据的工作流程：</p>
+<ol>
+<li>插入前 4 个字母 C N G A</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sy/2.png" alt="" /></p>
+<!-- ![](/assets/post/MySQL--sy/.png) -->
+<ol start="2">
+<li>插入 H，n&gt;4，中间元素 G 字母向上分裂到新的节点<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/bf3a0dc77ea66372d3501561d233f48111693d75551460e36f3288d0442b2851/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842322e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/bf3a0dc77ea66372d3501561d233f48111693d75551460e36f3288d0442b2851/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842322e706e67#from=url&amp;id=ZOQ8t&amp;originHeight=169&amp;originWidth=396&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></li>
+<li>插入 E、K、Q 不需要分裂</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/60d0b0755bbc3303d23131345c9bd37c0b2b3df378f9f1feb860dd6f40ae61ae/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842332e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/60d0b0755bbc3303d23131345c9bd37c0b2b3df378f9f1feb860dd6f40ae61ae/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842332e706e67#from=url&amp;id=wC4Ke&amp;originHeight=214&amp;originWidth=443&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ol start="4">
+<li>插入 M，中间元素 M 字母向上分裂到父节点 G</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/0e9162a675705ce71a7490ef73ea13ad87d3cc6974bd79ff43a5d092ca07f8f3/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842342e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/0e9162a675705ce71a7490ef73ea13ad87d3cc6974bd79ff43a5d092ca07f8f3/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842342e706e67#from=url&amp;id=FzlFS&amp;originHeight=212&amp;originWidth=460&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ol start="5">
+<li>插入 F，W，L，T 不需要分裂</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/20e2df17629569a0b1036cc6dc5dd93afac5cdd038f264784125e7c376980379/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842352e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/20e2df17629569a0b1036cc6dc5dd93afac5cdd038f264784125e7c376980379/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842352e706e67#from=url&amp;id=yG0ou&amp;originHeight=206&amp;originWidth=616&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ol start="6">
+<li>插入 Z，中间元素 T 向上分裂到父节点中</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/0da80fb3b2ba5577a543bcbe183f37b4fcf46ff03fed782290b6a9d5dadb6e87/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842362e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/0da80fb3b2ba5577a543bcbe183f37b4fcf46ff03fed782290b6a9d5dadb6e87/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842362e706e67#from=url&amp;id=g3kXq&amp;originHeight=207&amp;originWidth=674&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ol start="7">
+<li>插入 D，中间元素 D 向上分裂到父节点中，然后插入 P，R，X，Y 不需要分裂</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/4e01024a60f4f8344a6841b762fdc74fd2fa98a54c66a232e04d8180b1b4862c/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842372e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/4e01024a60f4f8344a6841b762fdc74fd2fa98a54c66a232e04d8180b1b4862c/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842372e706e67#from=url&amp;id=MXDmk&amp;originHeight=177&amp;originWidth=671&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ol start="8">
+<li>最后插入 S，NPQR 节点 n&gt;5，中间节点 Q 向上分裂，但分裂后父节点 DGMT 的 n&gt;5，中间节点 M 向上分裂</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/58d8526fa4bf6ffa747da475806cbd69d5af9b4af9ba3eb3da88032eb4b68bbb/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842382e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/58d8526fa4bf6ffa747da475806cbd69d5af9b4af9ba3eb3da88032eb4b68bbb/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4254726565254535254237254135254534254244253943254536254235253831254537254138253842382e706e67#from=url&amp;id=eJAmv&amp;originHeight=298&amp;originWidth=669&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a><br />
+BTree 树就已经构建完成了，BTree 树和二叉树相比， 查询数据的效率更高， 因为对于相同的数据量来说，<strong>BTree 的层级结构比二叉树少</strong>，所以搜索速度快。<br />
+BTree 结构的数据可以让系统高效的找到数据所在的磁盘块，定义一条记录为一个二元组 [key, data] ，key 为记录的键值，对应表中的主键值，data 为一行记录中除主键外的数据。对于不同的记录，key 值互不相同，BTree 中的每个节点根据实际情况可以包含大量的关键字信息和分支 。<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/e262fb1f119d3f8cac4dfde583c05db2d415fa7755b330f32d651b5c0f87edfc/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f254537254234254132254535254243253935254537253941253834254535253845253946254537253930253836312e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/e262fb1f119d3f8cac4dfde583c05db2d415fa7755b330f32d651b5c0f87edfc/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f254537254234254132254535254243253935254537253941253834254535253845253946254537253930253836312e706e67#from=url&amp;id=bUR7g&amp;originHeight=343&amp;originWidth=1008&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a><br />
+缺点：当进行范围查找时会出现回旋查找。</p>
+<h3 id="btree"><a class="markdownIt-Anchor" href="#btree"></a> B+Tree</h3>
+<p>BTree 数据结构中每个节点中不仅包含数据的 key 值，还有 data 值。磁盘中每一页的存储空间是有限的，如果 data 数据较大时将会导致每个节点（即一个页）能存储的 key 的数量很小，当存储的数据量很大时同样会导致 B-Tree 的深度较大，增大查询时的磁盘 I/O 次数，进而影响查询效率，所以引入 B+Tree。<br />
+B+Tree 为 BTree 的变种，B+Tree 与 BTree 的区别为：</p>
+<ul>
+<li>n 叉 B+Tree 最多含有 n 个 key（哈希值），而 BTree 最多含有 n-1 个 key</li>
+<li>所有<strong>非叶子节点只存储键值 key</strong> 信息，只进行数据索引，使每个非叶子节点所能保存的关键字大大增加</li>
+<li>所有<strong>数据都存储在叶子节点</strong>，所以每次数据查询的次数都一样</li>
+<li><strong>叶子节点按照 key 大小顺序排列，左边结尾数据都会保存右边节点开始数据的指针，形成一个链表</strong></li>
+<li>所有节点中的 key 在叶子节点中也存在（比如 5)，<strong>key 允许重复</strong>，B 树不同节点不存在重复的 key</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sy/3.png" alt="" /></p>
+<p>存储数据大小估算思路：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sy/4.png" alt="" /></p>
+<p>B* 树：是 B+ 树的变体，在 B+ 树的非根和非叶子结点再增加指向兄弟的指针。</p>
+<blockquote>
+<p>可以通过一个数据结构可视化的网站来简单演示一下：<strong><a target="_blank" rel="noopener" href="https://www.cs.usfca.edu/~galles/visualization">https://www.cs.usfca.edu/~galles/visualization</a></strong></p>
+</blockquote>
+<h3 id="mysql-对-btree-的优化"><a class="markdownIt-Anchor" href="#mysql-对-btree-的优化"></a> MySQL 对 B+Tree 的优化</h3>
+<p>MySQL 索引数据结构对经典的 B+Tree 进行了优化，在原 B+Tree 的基础上，增加一个指向相邻叶子节点的链表指针，就形成了带有顺序指针的 B+Tree，<strong>提高区间访问的性能，防止回旋查找。</strong><br />
+区间访问的意思是访问索引为 5 - 15 的数据，可以直接根据相邻节点的指针遍历。<br />
+B+ 树的<strong>叶子节点是数据页</strong>（page），一个页里面可以存多个数据行。<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/e5bf7de01bb46c73aa00352882c7fb94d58ab65274ad5549cdd554d893b15e5a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f254537254234254132254535254243253935254537253941253834254535253845253946254537253930253836322e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/e5bf7de01bb46c73aa00352882c7fb94d58ab65274ad5549cdd554d893b15e5a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f254537254234254132254535254243253935254537253941253834254535253845253946254537253930253836322e706e67#from=url&amp;id=U5XqO&amp;originHeight=376&amp;originWidth=1022&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a><br />
+通常在 B+Tree 上有两个头指针，<strong>一个指向根节点，另一个指向关键字最小的叶子节点</strong>，而且所有叶子节点（即数据节点）之间是一种链式环结构。可以对 B+Tree 进行两种查找运算：</p>
+<ul>
+<li>有范围：对于主键的范围查找和分页查找</li>
+<li>有顺序：从根节点开始，进行随机查找，顺序查找</li>
+</ul>
+<p>InnoDB 中每个数据页的大小默认是 16KB，</p>
+<ul>
+<li>索引行：一般表的主键类型为 INT（4 字节）或 BIGINT（8 字节），指针大小在 InnoDB 中设置为 6 字节，也就是说一个页大概存储 16KB/(8B+6B)=1K 个键值（估值）。则一个深度为 3 的 B+Tree 索引可以维护 10^3 * 10^3 * 10^3 = 10亿 条记录</li>
+<li>数据行：一行数据的大小可能是 1k，一个数据页可以存储 16 行</li>
+</ul>
+<p>实际情况中每个节点可能不能填充满，因此在数据库中，B+Tree 的高度一般都在 2-4 层。MySQL 的 InnoDB 存储引擎在设计时是<strong>将根节点常驻内存的</strong>，也就是说查找某一键值的行记录时最多只需要 1~3 次磁盘 I/O 操作。<br />
+B+Tree 优点：提高查询速度，减少磁盘的 IO 次数，树形结构较小。</p>
+<h3 id="索引维护不完全理解"><a class="markdownIt-Anchor" href="#索引维护不完全理解"></a> 索引维护（不完全理解*）</h3>
+<p>B+ 树为了保持索引的有序性，在插入新值的时候需要做相应的维护。<br />
+每个索引中每个块存储在磁盘页中，可能会出现以下两种情况：</p>
+<ul>
+<li>如果所在的数据页已经满了，这时候需要申请一个新的数据页，然后挪动部分数据过去，这个过程称为<strong>页分裂</strong>，原本放在一个页的数据现在分到两个页中，降低了空间利用率</li>
+<li>当相邻两个页由于删除了数据，利用率很低之后，会将数据页做<strong>页合并</strong>，合并的过程可以认为是分裂过程的逆过程</li>
+<li>这两个情况都是由 B+ 树的结构决定的（页分裂和页合并在 SQL 优化部分）</li>
+</ul>
+<p>一般选用数据小的字段做索引，字段长度越小，普通索引的叶子节点就越小，普通索引占用的空间也就越小。<br />
+自增主键的插入数据模式，可以让主键索引尽量地保持递增顺序插入，不涉及到挪动其他记录，<strong>避免了页分裂</strong>，页分裂的目的就是保证后一个数据页中的所有行主键值比前一个数据页中主键值大。</p>
+<h3 id="常考题"><a class="markdownIt-Anchor" href="#常考题"></a> 常考题</h3>
+<blockquote>
+<p>问：为什么InnoDB存储引擎选择使用B+tree索引结构?<br />
+答：</p>
+<ol>
+<li>相对于二叉树，层级更少，搜索效率高；</li>
+<li>对于B-tree，无论是叶子节点还是非叶子节点，都会保存数据，这样导致一页中存储</li>
+</ol>
+</blockquote>
+<p>的键值减少，指针跟着减少，要同样保存大量数据，只能增加树的高度，导致性能降低；</p>
+<blockquote>
+<ol start="3">
+<li>相对Hash索引，B+tree支持范围匹配及排序操作。</li>
+</ol>
+</blockquote>
+<h2 id="索引分类"><a class="markdownIt-Anchor" href="#索引分类"></a> 索引分类</h2>
+<p>索引一般的分类如下：</p>
+<ul>
+<li>功能分类
+<ul>
+<li><strong>主键索引</strong>：一种特殊的唯一索引，不允许有空值，一般在建表时同时创建主键索引</li>
+<li><strong>单列索引</strong>：一个索引只包含单个列，一个表可以有多个单列索引（普通索引）</li>
+<li><strong>联合索引</strong>：顾名思义，就是将单列索引进行组合</li>
+<li><strong>唯一索引</strong>：索引列的值必须唯一，<strong>允许有空值</strong>，如果是联合索引，则列值组合必须唯一
+<ul>
+<li>NULL 值可以出现多次，因为两个 NULL 比较的结果既不相等，也不不等，结果仍然是未知</li>
+<li>可以声明不允许存储 NULL 值的非空唯一索引</li>
+</ul>
+</li>
+<li>外键索引：只有 InnoDB 引擎支持外键索引，用来保证数据的一致性、完整性和实现级联操作</li>
+</ul>
+</li>
+<li>结构分类
+<ul>
+<li><strong>BTree 索引</strong>：MySQL 使用最频繁的一个索引数据结构，是 InnoDB 和 MyISAM 存储引擎默认的索引类型，底层基于 B+Tree</li>
+<li><strong>Hash 索引</strong>：MySQL中 Memory 存储引擎默认支持的索引类型</li>
+<li><strong>R-tree 索引</strong>（空间索引）：空间索引是 MyISAM 引擎的一个特殊索引类型，主要用于地理空间数据类型</li>
+<li><strong>Full-text 索引</strong>（全文索引）：快速匹配全部文档的方式。MyISAM 支持， InnoDB 不支持 FULLTEXT 类型的索引，但是 InnoDB 可以使用 sphinx 插件支持全文索引，MEMORY 引擎不支持</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>索引</th>
+<th>InnoDB</th>
+<th>MyISAM</th>
+<th>Memory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BTREE</td>
+<td>支持</td>
+<td>支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>HASH</td>
+<td>不支持</td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>R-tree</td>
+<td>不支持</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>Full-text</td>
+<td>5.6 版本之后支持</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+</tbody>
+</table>
+<p>联合索引图示：根据身高年龄建立的组合索引（height、age）<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/4ec94d7074a6bd87810af6488a8f85203c85710e0c6dc4be68f9fc24d6f02894/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545372542422538342545352539302538382545372542342541322545352542432539352545352539422542452e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/4ec94d7074a6bd87810af6488a8f85203c85710e0c6dc4be68f9fc24d6f02894/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545372542422538342545352539302538382545372542342541322545352542432539352545352539422542452e706e67#from=url&amp;id=fvAEl&amp;originHeight=672&amp;originWidth=2282&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h2 id="索引语法"><a class="markdownIt-Anchor" href="#索引语法"></a> 索引语法</h2>
+<h3 id="基本使用"><a class="markdownIt-Anchor" href="#基本使用"></a> 基本使用</h3>
+<p>索引在创建表的时候可以同时创建， 也可以随时增加新的索引。</p>
+<ul>
+<li>创建索引：如果一个表中有一列是主键，那么会<strong>默认为其创建主键索引</strong>（主键列不需要单独创建索引）</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> [<span class="keyword">UNIQUE</span><span class="operator">|</span>FULLTEXT] INDEX 索引名称 [<span class="keyword">USING</span> 索引类型] <span class="keyword">ON</span> 表名(列名...);</span><br><span class="line"><span class="comment">-- 索引类型默认是 B+TREE</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看索引</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> INDEX <span class="keyword">FROM</span> 表名;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>添加索引</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 单列索引</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">ADD</span> INDEX 索引名称(列名);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 组合索引</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">ADD</span> INDEX 索引名称(列名<span class="number">1</span>,列名<span class="number">2</span>,...);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 主键索引</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">ADD</span> <span class="keyword">PRIMARY</span> KEY(主键列名); </span><br><span class="line"></span><br><span class="line"><span class="comment">-- 外键索引(添加外键约束，就是外键索引)</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> 外键名 <span class="keyword">FOREIGN</span> KEY (本表外键列名) <span class="keyword">REFERENCES</span> 主表名(主键列名);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 唯一索引</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">ADD</span> <span class="keyword">UNIQUE</span> 索引名称(列名);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 全文索引(mysql只支持文本类型)</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">ADD</span> FULLTEXT 索引名称(列名);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除索引</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> INDEX 索引名称 <span class="keyword">ON</span> 表名;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>案例练习数据准备：student</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">id	NAME	 age	score</span><br><span class="line"><span class="number">1</span>	张三		<span class="number">23</span>		<span class="number">99</span></span><br><span class="line"><span class="number">2</span>	李四		<span class="number">24</span>		<span class="number">95</span></span><br><span class="line"><span class="number">3</span>	王五		<span class="number">25</span>		<span class="number">98</span></span><br><span class="line"><span class="number">4</span>	赵六		<span class="number">26</span>		<span class="number">97</span></span><br></pre></td></tr></table></figure>
+<p>索引操作：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 为student表中姓名列创建一个普通索引</span></span><br><span class="line"><span class="keyword">CREATE</span> INDEX idx_name <span class="keyword">ON</span> student(NAME);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 为student表中年龄列创建一个唯一索引</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">UNIQUE</span> INDEX idx_age <span class="keyword">ON</span> student(age);</span><br></pre></td></tr></table></figure>
+<h3 id="查看索引不理解"><a class="markdownIt-Anchor" href="#查看索引不理解"></a> 查看索引（不理解）</h3>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;Handler_read%&#x27;</span>;	</span><br><span class="line"><span class="keyword">SHOW</span> <span class="keyword">GLOBAL</span> STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;Handler_read%&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/326301c1118f236bb5480fd369ff8f71fa37dba474a77a5475cb6901d3a70785/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c2545362539462541352545372539432538422545372542342541322545352542432539352545342542442542462545372539342541382545362538332538352545352538362542352e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/326301c1118f236bb5480fd369ff8f71fa37dba474a77a5475cb6901d3a70785/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c2545362539462541352545372539432538422545372542342541322545352542432539352545342542442542462545372539342541382545362538332538352545352538362542352e706e67#from=url&amp;id=LuFIG&amp;originHeight=208&amp;originWidth=452&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>Handler_read_first：索引中第一条被读的次数，如果较高，表示服务器正执行大量全索引扫描（这个值越低越好）</li>
+<li>Handler_read_key：如果索引正在工作，这个值代表一个行被索引值读的次数，值越低表示索引不经常使用（这个值越高越好）</li>
+<li>Handler_read_next：按照键顺序读下一行的请求数，如果范围约束或执行索引扫描来查询索引列，值增加</li>
+<li>Handler_read_prev：按照键顺序读前一行的请求数，该读方法主要用于优化 ORDER BY … DESC</li>
+<li>Handler_read_rnd：根据固定位置读一行的请求数，如果执行大量查询并对结果进行排序则该值较高，可能是使用了大量需要 MySQL 扫描整个表的查询或连接，这个值较高意味着运行效率低，应该建立索引来解决</li>
+<li>Handler_read_rnd_next：在数据文件中读下一行的请求数，如果正进行大量的表扫描，该值较高，说明表索引不正确或写入的查询没有利用索引</li>
+</ul>
+<h2 id="聚簇-非聚簇"><a class="markdownIt-Anchor" href="#聚簇-非聚簇"></a> 聚簇 &amp; 非聚簇</h2>
+<h3 id="不同引擎下的聚簇对比"><a class="markdownIt-Anchor" href="#不同引擎下的聚簇对比"></a> 不同引擎下的聚簇对比</h3>
+<p>聚簇索引是一种数据存储方式，并不是一种单独的索引类型</p>
+<ul>
+<li>聚簇索引的叶子节点存放的是主键值和数据行，支持覆盖索引</li>
+<li>非聚簇索引的叶子节点存放的是主键值或指向数据行的指针（由存储引擎决定）</li>
+</ul>
+<p>在 Innodb 下主键索引是聚簇索引，在 MyISAM 下主键索引是非聚簇索引。</p>
+<h3 id="innodb"><a class="markdownIt-Anchor" href="#innodb"></a> Innodb</h3>
+<h4 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h4>
+<p>而在在InnoDB存储引擎中，根据索引的存储形式，又可以分为以下两种：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sy/5.png" alt="" /></p>
+<p>聚集索引<strong>选取规则</strong>:</p>
+<ol>
+<li>如果存在主键，主键索引就是聚集索引</li>
+<li>如果不存在主键，将使用第一个唯一（UNIQUE）索引作为聚集索引</li>
+<li>如果表没有主键，或没有合适的唯一索引，则InnoDB会自动生成一个rowid作为隐藏的聚集索引</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sy/6.png" alt="" /></p>
+<p>聚集索引的叶子节点下挂的是这一行的数据，二级索引的叶子节点下挂的是该字段值对应的主键值。</p>
+<h5 id="聚簇索引"><a class="markdownIt-Anchor" href="#聚簇索引"></a> 聚簇索引</h5>
+<p>在 Innodb 存储引擎，B+ 树索引可以分为聚簇索引（也称聚集索引、clustered index）和辅助索引（也称非聚簇索引或二级索引、secondary index、non-clustered index）。<br />
+InnoDB 中，聚簇索引是按照每张表的主键构造一颗 B+ 树，叶子节点中存放的就是整张表的数据，将聚簇索引的叶子节点称为数据页。</p>
+<ul>
+<li>这个特性决定了<strong>数据也是索引的一部分</strong>，所以一张表只能有一个聚簇索引</li>
+<li>辅助索引的存在不影响聚簇索引中数据的组织，所以一张表可以有多个辅助索引</li>
+</ul>
+<p>聚簇索引的优点：</p>
+<ul>
+<li>数据访问更快，聚簇索引将索引和数据保存在同一个 B+ 树中，因此从聚簇索引中获取数据比非聚簇索引更快</li>
+<li>聚簇索引对于主键的排序查找和范围查找速度非常快</li>
+</ul>
+<p>聚簇索引的缺点：</p>
+<ul>
+<li>插入速度严重依赖于插入顺序，按照主键的顺序（递增）插入是最快的方式，否则将会出现页分裂，严重影响性能，所以对于 InnoDB 表，一般都会定义一个自增的 ID 列为主键</li>
+<li>更新主键的代价很高，将会导致被更新的行移动，所以对于 InnoDB 表，一般定义主键为不可更新</li>
+<li>二级索引访问需要两次索引查找，第一次找到主键值，第二次根据主键值找到行数据</li>
+</ul>
+<h5 id="非聚簇二级索引"><a class="markdownIt-Anchor" href="#非聚簇二级索引"></a> 非聚簇（二级）索引</h5>
+<p>在聚簇索引之上创建的索引称之为辅助索引，非聚簇索引都是辅助索引，像复合索引、前缀索引、唯一索引等。<br />
+辅助索引叶子节点存储的是主键值，而不是数据的物理地址，所以访问数据需要二次查找，推荐使用覆盖索引，可以减少回表查询。<br />
+<strong>检索过程</strong>：辅助索引找到主键值，再通过聚簇索引（二分）找到数据页，最后通过数据页中的 Page Directory（二分）找到对应的数据分组，遍历组内所所有的数据找到数据行。<br />
+补充：无索引走全表查询，查到数据页后和上述步骤一致。</p>
+<h5 id="索引实现"><a class="markdownIt-Anchor" href="#索引实现"></a> 索引实现</h5>
+<p>InnoDB 使用 B+Tree 作为索引结构，并且 InnoDB 一定有索引。<br />
+主键索引：</p>
+<ul>
+<li>在 InnoDB 中，表数据文件本身就是按 B+Tree 组织的一个索引结构，这个索引的 key 是数据表的主键，叶子节点 data 域保存了完整的数据记录</li>
+<li>InnoDB 的表数据文件<strong>通过主键聚集数据</strong>，如果没有定义主键，会选择非空唯一索引代替，如果也没有这样的列，MySQL 会自动为 InnoDB 表生成一个<strong>隐含字段 row_id</strong> 作为主键，这个字段长度为 6 个字节，类型为长整形</li>
+</ul>
+<p>辅助索引：</p>
+<ul>
+<li>InnoDB 的所有辅助索引（二级索引）都引用主键作为 data 域</li>
+<li>InnoDB 表是基于聚簇索引建立的，因此 InnoDB 的索引能提供一种非常快速的主键查找性能。不过辅助索引也会包含主键列，所以不建议使用过长的字段作为主键，<strong>过长的主索引会令辅助索引变得过大</strong></li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/2d9c54f8598504a037680a0a21bd76aeab949cfa87af738be75bc2feb709a86d/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d496e6e6f44422545382538312539412545372542302538372545352539322538432545382542452538352545352538412541392545372542342541322545352542432539352545372542422539332545362539452538342e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/2d9c54f8598504a037680a0a21bd76aeab949cfa87af738be75bc2feb709a86d/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d496e6e6f44422545382538312539412545372542302538372545352539322538432545382542452538352545352538412541392545372542342541322545352542432539352545372542422539332545362539452538342e706e67#from=url&amp;id=oZYj9&amp;originHeight=309&amp;originWidth=1168&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h4 id="myisam"><a class="markdownIt-Anchor" href="#myisam"></a> MyISAM</h4>
+<h5 id="非聚簇"><a class="markdownIt-Anchor" href="#非聚簇"></a> 非聚簇</h5>
+<p>MyISAM 的主键索引使用的是非聚簇索引，索引文件和数据文件是分离的，<strong>索引文件仅保存数据的地址。</strong></p>
+<ul>
+<li>主键索引 B+ 树的节点存储了主键，辅助键索引 B+ 树存储了辅助键，表数据存储在独立的地方，这两颗 B+ 树的叶子节点都使用一个地址指向真正的表数据，对于表数据来说，这两个键没有任何差别</li>
+<li>由于索引树是独立的，通过辅助索引检索<strong>无需回表查询</strong>访问主键的索引树</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/70338be039e94a8ceb0353fb819c067f1bd54b3e485579fd27a623179419a14d/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545382538312539412545372542302538372545372542342541322545352542432539352545352539322538432545382542452538352545352538412541392545372542342541322545352542432539352545362541332538302545392539342538312545362539352542302545362538442541452545352539422542452e6a7067"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/70338be039e94a8ceb0353fb819c067f1bd54b3e485579fd27a623179419a14d/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545382538312539412545372542302538372545372542342541322545352542432539352545352539322538432545382542452538352545352538412541392545372542342541322545352542432539352545362541332538302545392539342538312545362539352542302545362538442541452545352539422542452e6a7067#from=url&amp;id=GEuYi&amp;originHeight=543&amp;originWidth=987&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h5 id="索引实现-2"><a class="markdownIt-Anchor" href="#索引实现-2"></a> 索引实现</h5>
+<p>MyISAM 的索引方式也叫做非聚集的，之所以这么称呼是为了与 InnoDB 的聚集索引区分。</p>
+<p>主键索引：MyISAM 引擎使用 B+Tree 作为索引结构，叶节点的 data 域存放的是数据记录的地址。<br />
+辅助索引：<strong>MyISAM 中主索引和辅助索引（Secondary key）在结构上没有任何区别</strong>，只是主索引要求 <strong>key 是唯一</strong>的，而辅助索引的 key 可以重复。<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/6b268087c05c85daeebedca51f8a58a476b8997aad0df3d97bfb28e0766cf79a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4d794953414d2545342542382542422545392539342541452545352539322538432545382542452538352545352538412541392545372542342541322545352542432539352545372542422539332545362539452538342e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/6b268087c05c85daeebedca51f8a58a476b8997aad0df3d97bfb28e0766cf79a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4d794953414d2545342542382542422545392539342541452545352539322538432545382542452538352545352538412541392545372542342541322545352542432539352545372542422539332545362539452538342e706e67#from=url&amp;id=uLUjp&amp;originHeight=510&amp;originWidth=1454&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h2 id="索引使用"><a class="markdownIt-Anchor" href="#索引使用"></a> 索引使用</h2>
+<h3 id="索引的失效情况"><a class="markdownIt-Anchor" href="#索引的失效情况"></a> 索引的失效情况</h3>
+<p><strong>全值匹配</strong>：对索引中所有列都指定具体值，这种情况索引生效，执行效率高。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tb_seller <span class="keyword">WHERE</span> name<span class="operator">=</span><span class="string">&#x27;小米科技&#x27;</span> <span class="keyword">AND</span> status<span class="operator">=</span><span class="string">&#x27;1&#x27;</span> <span class="keyword">AND</span> address<span class="operator">=</span><span class="string">&#x27;西安市&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/9b9528bcdfde75e168570b905df667f1bf2cdabf2f13bd4ae009e37550112938/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254537254234254132254535254243253935312e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/9b9528bcdfde75e168570b905df667f1bf2cdabf2f13bd4ae009e37550112938/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254537254234254132254535254243253935312e706e67#from=url&amp;id=iqURC&amp;originHeight=123&amp;originWidth=1308&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h3 id="失效情况及分析"><a class="markdownIt-Anchor" href="#失效情况及分析"></a> 失效情况及分析</h3>
+<h4 id="违背最左前缀法则"><a class="markdownIt-Anchor" href="#违背最左前缀法则"></a> 违背最左前缀法则</h4>
+<p>如果索引了多列（联合索引），要遵守最左前缀法则。最左前缀法则指的是查询从索引的最左列开始，<br />
+并且不跳过索引中的列。如果跳跃某一列，索引将会部分失效(后面的字段索引失效)。<br />
+比如：在一个表中，有一个联合索引，这个联合索引涉及到三个字段，顺序分别为：profession，<br />
+age，status。<br />
+对于最左前缀法则指的是，查询时，最左边的列，也就是 profession 必须存在，否则索引全部失效。<br />
+而且中间不能跳过某一列，否则该列后面的字段索引将失效。<br />
+<strong>注：顺序可以乱，但必须存在。</strong></p>
+<h4 id="范围查询"><a class="markdownIt-Anchor" href="#范围查询"></a> 范围查询</h4>
+<p>联合索引中，出现范围查询(&gt;,&lt;)，范围查询<strong>右侧的列索引失效</strong>。但使用&gt;=或&lt;=索引可以生效。所以，在业务允许的情况下，尽可能的使用类似于 &gt;= 或 &lt;= 这类的范围查询，而避免使用 &gt; 或 &lt; 。</p>
+<h4 id="函数或运算操作"><a class="markdownIt-Anchor" href="#函数或运算操作"></a> 函数或运算操作</h4>
+<p>在索引列上<strong>函数或者运算（+ - 数值）操作</strong>， 索引将失效：会破坏索引值的有序性<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/be9b656fddcb5393ee12b77cdff8efdb1799ec5416f4f44b583d2e5ce8816d4a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254537254234254132254535254243253935362e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/be9b656fddcb5393ee12b77cdff8efdb1799ec5416f4f44b583d2e5ce8816d4a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254537254234254132254535254243253935362e706e67#from=url&amp;id=Z4Pp6&amp;originHeight=116&amp;originWidth=1008&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h4 id="字符串不加单引号"><a class="markdownIt-Anchor" href="#字符串不加单引号"></a> 字符串不加单引号</h4>
+<p><strong>字符串不加单引号</strong>，造成索引失效：隐式类型转换，当字符串和数字比较时会<strong>把字符串转化为数字</strong>没有对字符串加单引号，查询优化器会调用 CAST 函数将 status 转换为 int 进行比较，造成索引失效<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/fa5fc53c1649ed5822251e25e61a2fb1735f623f7e2059e34766f17c308b3bde/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254537254234254132254535254243253935372e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/fa5fc53c1649ed5822251e25e61a2fb1735f623f7e2059e34766f17c308b3bde/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254537254234254132254535254243253935372e706e67#from=url&amp;id=udbGP&amp;originHeight=127&amp;originWidth=1343&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>如果 status 是 int 类型，<code>SQL 为 SELECT * FROM tb_seller WHERE status = '1'</code>  并不会造成索引失效，因为会将 <code>'1'</code> 转换为 <code>1</code>，并<strong>不会对索引列产生操作</strong></li>
+</ul>
+<h4 id="字符集不同"><a class="markdownIt-Anchor" href="#字符集不同"></a> 字符集不同</h4>
+<p>多表连接查询时，如果两张表的<strong>字符集不同</strong>，会造成索引失效，因为会进行类型转换。</p>
+<ul>
+<li>解决方法：CONVERT 函数是加在输入参数上、修改表的字符集</li>
+</ul>
+<h4 id="用-or-分割条件"><a class="markdownIt-Anchor" href="#用-or-分割条件"></a> 用 OR 分割条件</h4>
+<p><strong>用 OR 分割条件，索引失效</strong>，导致全表查询：OR 前的条件中的列有索引而后面的列中没有索引或 OR 前后两个列是同一个复合索引，都造成索引失效<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/aaef4f06de002e28ac4d899e06d357ddcb00370ad0e8355bdd20b9a7b2fac6e7/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c25453425424425424625453725393425413825453725423425413225453525424325393531302e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/aaef4f06de002e28ac4d899e06d357ddcb00370ad0e8355bdd20b9a7b2fac6e7/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c25453425424425424625453725393425413825453725423425413225453525424325393531302e706e67#from=url&amp;id=YSwW0&amp;originHeight=120&amp;originWidth=1095&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li><strong>AND 分割的条件不影响</strong>：<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/d90e83715550146984de8acda4e7a0f6ac2f4e40f8836a86a5c7a9619e2e67a3/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c25453425424425424625453725393425413825453725423425413225453525424325393531312e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/d90e83715550146984de8acda4e7a0f6ac2f4e40f8836a86a5c7a9619e2e67a3/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c25453425424425424625453725393425413825453725423425413225453525424325393531312e706e67#from=url&amp;id=L82Gw&amp;originHeight=121&amp;originWidth=1273&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></li>
+</ul>
+<h4 id="以-开头的-like-模糊查询"><a class="markdownIt-Anchor" href="#以-开头的-like-模糊查询"></a> 以 % 开头的 LIKE 模糊查询</h4>
+<p><strong>以 % 开头的 LIKE 模糊查询</strong>，索引失效：如果是尾部模糊匹配，索引不会失效；如果是头部模糊匹配，索引失效。<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/b261923e470a1ca1babfc4769082f11beb4d4f124f73b27a7e52773e1e83333f/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c25453425424425424625453725393425413825453725423425413225453525424325393531322e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/b261923e470a1ca1babfc4769082f11beb4d4f124f73b27a7e52773e1e83333f/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c25453425424425424625453725393425413825453725423425413225453525424325393531322e706e67#from=url&amp;id=MW9SO&amp;originHeight=253&amp;originWidth=1350&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>解决方案：通过覆盖索引来解决</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/f3f25f7cd31dd74688fcd85f73999fe9658f9e8330fa211ea10270702c486918/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c25453425424425424625453725393425413825453725423425413225453525424325393531332e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/f3f25f7cd31dd74688fcd85f73999fe9658f9e8330fa211ea10270702c486918/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c25453425424425424625453725393425413825453725423425413225453525424325393531332e706e67#from=url&amp;id=L0U6i&amp;originHeight=128&amp;originWidth=1278&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>原因：在覆盖索引的这棵 B+ 数上只需要进行 like 的匹配，或者是基于覆盖索引查询再进行 WHERE 的判断就可以获得结果</li>
+</ul>
+<h4 id="数据分布影响"><a class="markdownIt-Anchor" href="#数据分布影响"></a> 数据分布影响</h4>
+<p>如果MySQL评估使用索引比全表更慢，则不使用索引。比如查找的数据量超过表的一半，MySQL 认为索引对查询的帮助不大，此时索引失效。</p>
+<h3 id="索引失效原理"><a class="markdownIt-Anchor" href="#索引失效原理"></a> 索引失效原理</h3>
+<p>索引失效一般是针对联合索引，联合索引一般由几个字段组成，排序方式是先按照第一个字段进行排序，然后排序第二个，依此类推，图示（a, b）索引，<strong>a 相等的情况下 b 是有序的。</strong><br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/5a5ae80a8fdac51b9cb9883cd46e2489458bbef352675308681483c2a7a97f56/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de7b4a2e5bc95e5a4b1e69588e5ba95e5b182e58e9fe79086312e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/5a5ae80a8fdac51b9cb9883cd46e2489458bbef352675308681483c2a7a97f56/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de7b4a2e5bc95e5a4b1e69588e5ba95e5b182e58e9fe79086312e706e67#from=url&amp;id=mIXII&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>最左前缀法则：当不匹配前面的字段的时候，后面的字段都是无序的。这种无序不仅体现在叶子节点，也会<strong>导致查询时扫描的非叶子节点也是无序的</strong>，因为索引树相当于忽略的第一个字段，就无法使用二分查找</li>
+<li>范围查询右边的列，不能使用索引，比如语句： <code>WHERE a &gt; 1 AND b = 1</code> ，在 a 大于 1 的时候，b 是无序的，a &gt; 1 是扫描时有序的，但是找到以后进行寻找 b 时，索引树就不是有序的了<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/c1488324ec7cdbd519ca0cc1b8e5b4d8161ad2df30a4c29ebd0bd0abe99883da/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de7b4a2e5bc95e5a4b1e69588e5ba95e5b182e58e9fe79086322e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/c1488324ec7cdbd519ca0cc1b8e5b4d8161ad2df30a4c29ebd0bd0abe99883da/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de7b4a2e5bc95e5a4b1e69588e5ba95e5b182e58e9fe79086322e706e67#from=url&amp;id=crSui&amp;originHeight=249&amp;originWidth=694&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></li>
+<li>以 % 开头的 LIKE 模糊查询，索引失效，比如语句：WHERE a LIKE ‘%d’，前面的不确定，导致不符合最左匹配，直接去索引中搜索以 d 结尾的节点，所以没有顺序<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/a411862fe0a971d563851f973ea6be885f5d7b2b02ce9d498f12ff47a87ad31a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254537254234254132254535254243253935254535254134254231254536253935253838254535254241253935254535254231253832254535253845253946254537253930253836332e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/a411862fe0a971d563851f973ea6be885f5d7b2b02ce9d498f12ff47a87ad31a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254537254234254132254535254243253935254535254134254231254536253935253838254535254241253935254535254231253832254535253845253946254537253930253836332e706e67#from=url&amp;id=RsD3f&amp;originHeight=130&amp;originWidth=438&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></li>
+</ul>
+<blockquote>
+<p>参考文章：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/B_M09dzLe9w7cT46rdGIeQ">https://mp.weixin.qq.com/s/B_M09dzLe9w7cT46rdGIeQ</a></p>
+</blockquote>
+<h2 id="索引优化"><a class="markdownIt-Anchor" href="#索引优化"></a> 索引优化</h2>
+<h3 id="sql-提示"><a class="markdownIt-Anchor" href="#sql-提示"></a> SQL 提示</h3>
+<p>SQL 提示，是优化数据库的一个重要手段，就是在 SQL 语句中加入一些提示来达到优化操作的目的。</p>
+<ul>
+<li><code>USE INDEX</code>：在查询语句中表名的后面添加 USE INDEX 来提供 MySQL 去参考的索引列表，可以让 MySQL 不再考虑其他可用的索引</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/673f2290f6a0f393a1333e9d8df5c006d1ae74e7aa317a6b00debed6862310fe/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254536253846253930254537254134254241312e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/673f2290f6a0f393a1333e9d8df5c006d1ae74e7aa317a6b00debed6862310fe/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254536253846253930254537254134254241312e706e67#from=url&amp;id=yM0Hk&amp;originHeight=119&amp;originWidth=1068&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li><code>IGNORE INDEX</code>：让 MySQL 忽略一个或者多个索引，则可以使用 IGNORE INDEX 作为提示</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/13ebfe585a2c796499b7fb759bc81bf89fea5cd1dbfe5c170f196f68e4a812a9/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254536253846253930254537254134254241322e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/13ebfe585a2c796499b7fb759bc81bf89fea5cd1dbfe5c170f196f68e4a812a9/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254536253846253930254537254134254241322e706e67#from=url&amp;id=w3Q7P&amp;originHeight=117&amp;originWidth=1207&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li><code>FORCE INDEX</code>：强制 MySQL 使用一个特定的索引</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/b9398811ce81f67fde56ad116c2a7f47a2d3a48d9b4d4d5727ff424263452775/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254536253846253930254537254134254241332e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/b9398811ce81f67fde56ad116c2a7f47a2d3a48d9b4d4d5727ff424263452775/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254534254244254246254537253934254138254536253846253930254537254134254241332e706e67#from=url&amp;id=tX93K&amp;originHeight=123&amp;originWidth=1210&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h3 id="覆盖索引"><a class="markdownIt-Anchor" href="#覆盖索引"></a> 覆盖索引</h3>
+<p>覆盖索引：包含所有满足查询需要的数据的索引（SELECT 后面的字段刚好是索引字段），可以利用该索引返回 SELECT 列表的字段，而不必根据索引去聚簇索引上读取数据文件。<br />
+回表查询：</p>
+<ul>
+<li>要查找的字段不在非主键索引树上时，需要通过叶子节点的主键值去主键索引上获取对应的行数据。</li>
+</ul>
+<p>使用覆盖索引，防止回表查询：</p>
+<ul>
+<li>表 user 主键为 id，普通索引为 age，查询语句：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> <span class="keyword">WHERE</span> age <span class="operator">=</span> <span class="number">30</span>;</span><br></pre></td></tr></table></figure>
+<p>查询过程：先通过普通索引 age=30 定位到主键值 id=1，再通过聚集索引 id=1 定位到行记录数据，需要两次扫描 B+ 树。</p>
+<ul>
+<li>使用覆盖索引：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> INDEX idx_age <span class="keyword">ON</span> <span class="keyword">user</span>;</span><br><span class="line"><span class="keyword">CREATE</span> INDEX idx_age_name <span class="keyword">ON</span> <span class="keyword">user</span>(age,name);</span><br><span class="line"><span class="keyword">SELECT</span> id,age <span class="keyword">FROM</span> <span class="keyword">user</span> <span class="keyword">WHERE</span> age <span class="operator">=</span> <span class="number">30</span>;</span><br></pre></td></tr></table></figure>
+<p>在一棵索引树上就能获取查询所需的数据，无需回表速度更快。<br />
+使用覆盖索引，要注意 SELECT 列表中只取出需要的列，不可用 SELECT *，所有字段一起做索引会导致索引文件过大，查询性能下降。</p>
+<h3 id="索引下推"><a class="markdownIt-Anchor" href="#索引下推"></a> 索引下推</h3>
+<p>索引条件下推优化（Index Condition Pushdown，ICP）是 MySQL5.6 添加，可以在索引遍历过程中，对索引中包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表次数。<br />
+索引下推充分利用了索引中的数据，在查询出整行数据之前过滤掉无效的数据，再去主键索引树上查找。</p>
+<ul>
+<li>不使用索引下推优化时存储引擎通过索引检索到数据，然后回表查询记录返回给 Server 层，<strong>服务器判断数据是否符合条件</strong><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/2aaff590c95462577ffbaa0fc88aa06fe40767a8f8e1e97e0c71b37c6d564fe2/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545342542382538442545342542442542462545372539342541382545372542342541322545352542432539352545342542382538422545362538452541382e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/2aaff590c95462577ffbaa0fc88aa06fe40767a8f8e1e97e0c71b37c6d564fe2/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545342542382538442545342542442542462545372539342541382545372542342541322545352542432539352545342542382538422545362538452541382e706e67#from=url&amp;id=aNLnC&amp;originHeight=323&amp;originWidth=740&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></li>
+<li>使用索引下推优化时，如果<strong>存在某些被索引的列的判断条件</strong>时，由存储引擎在索引遍历的过程中判断数据是否符合传递的条件，将符合条件的数据进行回表，检索出来返回给服务器，由此减少 IO 次数<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/8c14b3e49ad55056f60d24878cca503ee3da8b7c053e02b2cc9315defb5d2e55/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545342542442542462545372539342541382545372542342541322545352542432539352545342542382538422545362538452541382e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/8c14b3e49ad55056f60d24878cca503ee3da8b7c053e02b2cc9315defb5d2e55/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545342542442542462545372539342541382545372542342541322545352542432539352545342542382538422545362538452541382e706e67#from=url&amp;id=DVoVn&amp;originHeight=323&amp;originWidth=741&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></li>
+</ul>
+<p><strong>适用条件</strong>：</p>
+<ul>
+<li>需要存储引擎将索引中的数据与条件进行判断（所以<strong>条件列必须都在同一个索引中</strong>），所以优化是基于存储引擎的，只有特定引擎可以使用，适用于 InnoDB 和 MyISAM</li>
+<li>存储引擎没有调用跨存储引擎的能力，跨存储引擎的功能有存储过程、触发器、视图，所以调用这些功能的不可以进行索引下推优化</li>
+<li>对于 InnoDB 引擎只适用于二级索引，InnoDB 的聚簇索引会将整行数据读到缓冲区，不再需要去回表查询了</li>
+</ul>
+<p>工作过程：用户表 user，(name, age) 是联合索引</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> <span class="keyword">WHERE</span> name <span class="keyword">LIKE</span> <span class="string">&#x27;张%&#x27;</span> <span class="keyword">AND</span>　age <span class="operator">=</span> <span class="number">10</span>;	<span class="comment">-- 头部模糊匹配会造成索引失效</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>优化前：在非主键索引树上找到满足第一个条件的行，然后通过叶子节点记录的主键值再回到主键索引树上查找到对应的行数据，再对比 AND 后的条件是否符合，符合返回数据，需要 4 次回表<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/845b4e5aa5ff06311703341aad05b2046bedcf5ac29393604bc67a173e687e7d/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254537254234254132254535254243253935254534254238253842254536253845254138254534254243253938254535253843253936312e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/845b4e5aa5ff06311703341aad05b2046bedcf5ac29393604bc67a173e687e7d/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254537254234254132254535254243253935254534254238253842254536253845254138254534254243253938254535253843253936312e706e67#from=url&amp;id=KDmDu&amp;originHeight=432&amp;originWidth=1084&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></li>
+<li>优化后：检查索引中存储的列信息是否符合索引条件，然后交由存储引擎用剩余的判断条件判断此行数据是否符合要求，<strong>不满足条件的不去读取表中的数据</strong>，满足下推条件的就根据主键值进行回表查询，2 次回表 <a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/5e5edc4bc6177dfe4b9820dc8e802583fde67b25c7910b041d29356718612545/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254537254234254132254535254243253935254534254238253842254536253845254138254534254243253938254535253843253936322e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/5e5edc4bc6177dfe4b9820dc8e802583fde67b25c7910b041d29356718612545/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254537254234254132254535254243253935254534254238253842254536253845254138254534254243253938254535253843253936322e706e67#from=url&amp;id=FkuSL&amp;originHeight=440&amp;originWidth=1058&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></li>
+</ul>
+<p>当使用 EXPLAIN 进行分析时，如果使用了索引条件下推，Extra 会显示 <code>Using index condition</code>。</p>
+<blockquote>
+<p>参考文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/sinat_29774479/article/details/103470244">https://blog.csdn.net/sinat_29774479/article/details/103470244</a></p>
+</blockquote>
+<blockquote>
+<p>参考文章：<a target="_blank" rel="noopener" href="https://time.geekbang.org/column/article/69636">https://time.geekbang.org/column/article/69636</a></p>
+</blockquote>
+<h3 id="前缀索引"><a class="markdownIt-Anchor" href="#前缀索引"></a> 前缀索引</h3>
+<p>当要索引的列字符很多时，索引会变大变慢，可以只索引列开始的部分字符串，节约索引空间，提高索引效率。<br />
+注意：<strong>使用前缀索引就系统就忽略覆盖索引对查询性能的优化了</strong>。<br />
+优化原则：<strong>降低重复的索引值</strong><br />
+比如地区表：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">area			    gdp		code</span><br><span class="line">chinaShanghai	<span class="number">100</span>		aaa</span><br><span class="line">chinaDalian		<span class="number">200</span>		bbb</span><br><span class="line">usaNewYork		<span class="number">300</span>		ccc</span><br><span class="line">chinaFuxin		<span class="number">400</span>		ddd</span><br><span class="line">chinaBeijing	<span class="number">500</span>		eee</span><br></pre></td></tr></table></figure>
+<p>发现 area 字段很多都是以 china 开头的，那么如果以前 1-5 位字符做前缀索引就会出现大量索引值重复的情况，索引值重复性越低，查询效率也就越高，所以需要建立前 6 位字符的索引：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> INDEX idx_area <span class="keyword">ON</span> table_name(area(<span class="number">7</span>));</span><br></pre></td></tr></table></figure>
+<p>场景：存储身份证</p>
+<ul>
+<li>直接创建完整索引，这样可能比较占用空间</li>
+<li>创建前缀索引，节省空间，但会增加查询扫描次数，并且不能使用覆盖索引</li>
+<li>倒序存储，再创建前缀索引，用于绕过字符串本身前缀的区分度不够的问题（前 6 位相同的很多）</li>
+<li>创建 hash 字段索引，查询性能稳定，有额外的存储和计算消耗，跟第三种方式一样，都不支持范围扫描</li>
+</ul>
+<h3 id="索引合并不理解"><a class="markdownIt-Anchor" href="#索引合并不理解"></a> 索引合并（不理解）</h3>
+<p>使用多个索引来完成一次查询的执行方法叫做索引合并 index merge。</p>
+<ul>
+<li>Intersection 索引合并</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> table_test <span class="keyword">WHERE</span> key1 <span class="operator">=</span> <span class="string">&#x27;a&#x27;</span> <span class="keyword">AND</span> key3 <span class="operator">=</span> <span class="string">&#x27;b&#x27;</span>; # key1 和 key3 列都是单列索引、二级索引</span><br></pre></td></tr></table></figure>
+<ul>
+<li>从不同索引中扫描到的记录的 id 值取<strong>交集</strong>（相同 id），然后执行回表操作，要求从每个二级索引获取到的记录都是按照主键值排序</li>
+<li>Union 索引合并</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> table_test <span class="keyword">WHERE</span> key1 <span class="operator">=</span> <span class="string">&#x27;a&#x27;</span> <span class="keyword">OR</span> key3 <span class="operator">=</span> <span class="string">&#x27;b&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>从不同索引中扫描到的记录的 id 值取<strong>并集</strong>，然后执行回表操作，要求从每个二级索引获取到的记录都是按照主键值排序</li>
+<li>Sort-Union 索引合并</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> table_test <span class="keyword">WHERE</span> key1 <span class="operator">&lt;</span> <span class="string">&#x27;a&#x27;</span> <span class="keyword">OR</span> key3 <span class="operator">&gt;</span> <span class="string">&#x27;b&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>先将从不同索引中扫描到的记录的主键值进行排序，再按照 Union 索引合并的方式进行查询</li>
+</ul>
+<p>索引合并算法的效率并不好，通过将其中的一个索引改成联合索引会优化效率。</p>
+<h2 id="索引设计原则"><a class="markdownIt-Anchor" href="#索引设计原则"></a> 索引设计原则</h2>
+<p>索引的设计可以遵循一些已有的原则，创建索引的时候请尽量考虑符合这些原则，便于提升索引的使用效率。<br />
+创建索引时的原则：</p>
+<ol>
+<li>对查询<strong>频次较高</strong>，且数据量比较大的表建立索引</li>
+<li>使用<strong>唯一索引</strong>，区分度越高，使用索引的效率越高</li>
+<li>尽量使用联合索引，避免单列索引；索引字段的选择，针对于常作为<strong>查询条件（where）、排序（order by）、分组（group by）<strong>操作的字段建立索引，使用</strong>覆盖索引</strong></li>
+<li>使用<strong>短索引</strong>，索引创建之后也是使用硬盘来存储的，因此提升索引访问的 I/O 效率，也可以提升总体的访问效率。假如构成索引的字段总长度比较短，那么在给定大小的存储块内可以存储更多的索引值，相应的可以有效的提升 MySQL 访问索引的 I/O 效率</li>
+<li>索引可以有效的提升查询数据的效率，但索引数量不是多多益善，索引越多，维护索引的代价越高。对于插入、更新、删除等 DML 操作比较频繁的表来说，索引过多，会引入相当高的维护代价，降低 DML 操作的效率，增加相应操作的时间消耗；另外索引过多的话，MySQL 也会犯选择困难病，虽然最终仍然会找到一个可用的索引，但提高了选择的代价</li>
+<li>MySQL 建立联合索引时会遵守<strong>最左前缀匹配原则</strong>，即最左优先，在检索数据时从联合索引的最左边开始匹配N 个列组合而成的组合索引，相当于创建了 N 个索引，如果查询时 where 句中使用了组成该索引的<strong>前</strong>几个字段，那么这条查询 SQL 可以利用组合索引来提升查询效率</li>
+<li>如果索引列不能存储NULL值，请在创建表时使用NOT NULL约束它。当优化器知道每列是否包含 NULL值时，它可以更好地确定哪个索引最有效地用于查询</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 对name、address、phone列建一个联合索引</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="keyword">user</span> <span class="keyword">ADD</span> INDEX index_three(name,address,phone);</span><br><span class="line"><span class="comment">-- 查询语句执行时会依照最左前缀匹配原则，检索时分别会使用索引进行数据匹配。</span></span><br><span class="line">(name,address,phone)</span><br><span class="line">(name,address)</span><br><span class="line">(name,phone)	<span class="comment">-- 只有name字段走了索引</span></span><br><span class="line">(name)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 索引的字段可以是任意顺序的，优化器会帮助我们调整顺序，下面的SQL语句可以命中索引</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> <span class="keyword">WHERE</span> address <span class="operator">=</span> <span class="string">&#x27;北京&#x27;</span> <span class="keyword">AND</span> phone <span class="operator">=</span> <span class="string">&#x27;12345&#x27;</span> <span class="keyword">AND</span> name <span class="operator">=</span> <span class="string">&#x27;张三&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 如果联合索引中最左边的列不包含在条件查询中，SQL语句就不会命中索引，比如：</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> <span class="keyword">user</span> <span class="keyword">WHERE</span> address <span class="operator">=</span> <span class="string">&#x27;北京&#x27;</span> <span class="keyword">AND</span> phone <span class="operator">=</span> <span class="string">&#x27;12345&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>哪些情况不要建立索引：</p>
+<ol>
+<li>记录太少的表</li>
+<li>经常增删改的表</li>
+<li>频繁更新的字段不适合创建索引</li>
+<li>where 条件里用不到的字段不创建索引</li>
+</ol>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://strivingto.top/2024/01/22/MySQL--%E7%B4%A2%E5%BC%95/" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://strivingto.top/2024/01/22/MySQL--%E7%B4%A2%E5%BC%95/"/>
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2024/01/24/MySQL--%E9%AB%98%E7%BA%A7%E7%BB%93%E6%9E%84/">MySQL--高级结构</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/05/21/MySQL--%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">MySQL--存储引擎</a></div></section></div>
+
+  <script>
+    let tianliGPT_postSelector = 'article.content';
+    let tianliGPT_key = '9ba935841efd4f2ee0fd';
+    let tianliGPT_typingAnimate = 'true';
+    let tianliGPT_wordLimit = 100;
+  </script>
+<script defer src="https://cdn1.tianli0.top/gh/zhheo/Post-Abstract-AI@0.15.2/tianli_gpt.min.js"></script>
+
+
+<div class="related-wrap" id="related-posts">
+    <section class='header'>
+      <div class='title cap theme'>您可能感兴趣的文章</div>
+    </section>
+    <section class='body'>
+    <div class="related-posts"><a class="item" href="\2024\01\29\MySQL--Innodb 引擎\" title="MySQL--Innodb引擎"><span class="title">MySQL--Innodb引擎</span></a><a class="item" href="\2023\05\21\MySQL--存储引擎\" title="MySQL--存储引擎"><span class="title">MySQL--存储引擎</span></a><a class="item" href="\2024\01\27\MySQL--SQL 优化\" title="MySQL--SQL优化"><span class="title">MySQL--SQL优化</span></a><a class="item" href="\2023\05\15\MySQL--单表操作\" title="MySQL--单表操作"><span class="title">MySQL--单表操作</span></a><a class="item" href="\2023\05\11\MySQL--入门\" title="MySQL--入门"><span class="title">MySQL--入门</span></a></div></section></div>
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="sitemap"><div class="sitemap-group"><span class="fs15">博客</span><a href="/">首页</a><a href="/categories/">分类</a><a href="/tags/">标签</a><a href="/archives/">归档</a></div><div class="sitemap-group"><span class="fs15">项目</span><a href="/">暂无</a></div><div class="sitemap-group"><span class="fs15">社交</span><a href="/friends/">友链</a></div><div class="sitemap-group"><span class="fs15">更多</span><a href="/about/">关于本站</a><a target="_blank" rel="noopener" href="https://github.com/GIMME-JIA">GitHub</a></div></div><div class="text"><center>
+  本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">[CC BY-NC-SA 4.0]</a> 许可协议，转载请注明出处。<br/>
+  <!--不蒜子计数器-->
+  <script defer src="https://busuanzi.9420.ltd/js"></script>
+  <!--添加一个访问量-->
+<p>本页总阅读 <span id="busuanzi_page_pv"></span> 次       页总访客 <span id="busuanzi_page_uv"></span> 人<br />
+本站总访问 <span id="busuanzi_site_pv"></span> 次       本站总访客 <span id="busuanzi_site_uv"></span> 人</p>
+</center>
+</div></footer>
+<div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+<div class="main-mask" onclick="sidebar.toggle()"></div></div></div><div class="scripts">
+<script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.26.8';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.26.8';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js","marked":"/js/plugins/marked.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://cdn.bootcdn.net/ajax/libs/vanilla-lazyload/17.8.4/lazyload.min.js","transition":"fade"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://cdn.bootcdn.net/ajax/libs/scrollReveal.js/4.0.9/scrollreveal.min.js","distance":"16px","duration":800,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","flying_pages":"https://cdn.bootcdn.net/ajax/libs/flying-pages/2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.umd.min.js","css":"https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.min.css","selector":null});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied","toast":"复制成功"});
+  }
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.26.8" async></script>
+
+<!-- optional -->
+
+
+
+
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@v9/dist/mermaid.min.js"></script>
+<script>
+  var mermaid_config = {
+    startOnLoad: true,
+    theme:
+      "auto" == "auto" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "neutral",
+    logLevel: 3,
+    themeVariables: {
+      darkMode: true
+    },
+    flowchart: {
+      useMaxWidth: false,
+      htmlLabels: true,
+      curve: "linear"
+    },
+    gantt: {
+      axisFormat: "%Y/%m/%d"
+    },
+    sequence: {
+      actorMargin: 50
+    }
+  }
+  if (window.mermaid) {
+    mermaid.initialize(mermaid_config);
+  }
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

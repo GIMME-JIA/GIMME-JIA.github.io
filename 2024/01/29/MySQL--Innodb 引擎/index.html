@@ -1,0 +1,688 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.26.8" theme-name="Stellar" theme-version="1.26.8">
+  
+  <meta name="generator" content="Hexo 6.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>MySQL--Innodb引擎 - 小破站</title>
+
+  
+    <meta name="description" content="逻辑结构   架构  概述 MySQL5.5 版本开始，默认使用InnoDB存储引擎，它擅长事务处理，具有崩溃恢复特性，在日常开发中使用非常广泛。下面是InnoDB架构图，左侧为内存结构，右侧为磁盘结构。   内存结构  Buffer Pool InnoDB存储引擎基于磁盘文件存储，访问物理硬盘和在内存中进行访问，速度相差很大，为了尽可能弥补这两者之间的I&#x2F;O效率的差值，就需要把经常使用的数据加">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL--Innodb引擎">
+<meta property="og:url" content="https://strivingto.top/2024/01/29/MySQL--Innodb%20%E5%BC%95%E6%93%8E/index.html">
+<meta property="og:site_name" content="小破站">
+<meta property="og:description" content="逻辑结构   架构  概述 MySQL5.5 版本开始，默认使用InnoDB存储引擎，它擅长事务处理，具有崩溃恢复特性，在日常开发中使用非常广泛。下面是InnoDB架构图，左侧为内存结构，右侧为磁盘结构。   内存结构  Buffer Pool InnoDB存储引擎基于磁盘文件存储，访问物理硬盘和在内存中进行访问，速度相差很大，为了尽可能弥补这两者之间的I&#x2F;O效率的差值，就需要把经常使用的数据加">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/1.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/2.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/3.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/4.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/5.png">
+<meta property="og:image" content="https://camo.githubusercontent.com/7b34265f980fcb55ec0a7630959de9fcbc1d8a81f5d539b2b588b923de428322/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de7a9bae997b2e993bee8a1a82e706e67#from=url&amp;id=tCgHM&amp;originHeight=702&amp;originWidth=1381&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/cf152599fa528f32cab5146c9706be141a4fc5a280b4a6cec411ff4241e6640a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de8848fe9a1b5e993bee8a1a82e706e67#from=url&amp;id=p158i&amp;originHeight=688&amp;originWidth=1435&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/6.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/7.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/8.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/9.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/10.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/11.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/12.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/13.png">
+<meta property="og:image" content="https://camo.githubusercontent.com/4f4fa8aba25f87adaca460e59c13b2424a793614e35e3f7b654b5db63132c922/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4d564343e78988e69cace993be2e706e67#from=url&amp;id=jdEVw&amp;originHeight=429&amp;originWidth=750&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/14.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/15.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/16.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/17.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/18.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/19.png">
+<meta property="article:published_time" content="2024-01-29T02:41:02.000Z">
+<meta property="article:modified_time" content="2024-03-04T02:51:06.640Z">
+<meta property="article:author" content="JIA">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://strivingto.top/assets/post/MySQL--Innodbyq/1.png">
+  
+  
+  
+  <meta name="keywords" content="MySQL">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.26.8">
+
+  
+    <link rel="shortcut icon" href="https://i.ibb.co/t8bH857/avatar.png">
+  
+
+  
+
+  
+  
+</head>
+<body>
+
+<div class="l_body content tech" id="start" layout="post" ><aside class="l_left"><div class="sidebar-container sidebar-blur">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://i.ibb.co/t8bH857/avatar.png(/)" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">JIA</div><div class="sub normal cap">种一棵树最好的时间是十年前</div><div class="sub hover cap" style="opacity:0"> 其次是现在</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"><a class="nav-item active" title="主页" href="/" style="color:#1BCDFC"><span>主页</span></a><a class="nav-item" title="友链" href="/friends/" style="color:#F44336"><span>友链</span></a><a class="nav-item" title="关于" href="/about/" style="color:#F44336"><span>关于</span></a></nav>
+</div>
+<div class="widgets">
+
+<widget class="widget-wrapper toc single" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E7%BB%93%E6%9E%84"><span class="toc-text"> 逻辑结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84"><span class="toc-text"> 架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-text"> 概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84"><span class="toc-text"> 内存结构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#buffer-pool"><span class="toc-text"> Buffer Pool</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#change-buffer"><span class="toc-text"> Change Buffer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#adaptive-hash-index"><span class="toc-text"> Adaptive Hash Index</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#log-buffer"><span class="toc-text"> Log Buffer</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-text"> 内存管理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#free-%E9%93%BE%E8%A1%A8"><span class="toc-text"> Free 链表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#flush-%E9%93%BE%E8%A1%A8"><span class="toc-text"> Flush 链表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#lru-%E9%93%BE%E8%A1%A8"><span class="toc-text"> LRU 链表</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A3%81%E7%9B%98%E7%BB%93%E6%9E%84"><span class="toc-text"> 磁盘结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E5%8F%B0%E7%BA%BF%E7%A8%8B"><span class="toc-text"> 后台线程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E5%8E%9F%E7%90%86"><span class="toc-text"> 事务原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E8%BF%B0"><span class="toc-text"> 基本概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redo-log"><span class="toc-text"> Redo log</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#undo-log"><span class="toc-text"> Undo log</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mvcc"><span class="toc-text"> MVCC</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E8%BF%B0-2"><span class="toc-text"> 基本概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9A%90%E8%97%8F%E5%AD%97%E6%AE%B5"><span class="toc-text"> 隐藏字段</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E9%93%BE"><span class="toc-text"> 版本链</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#read-view"><span class="toc-text"> Read View</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E6%B5%81%E7%A8%8B"><span class="toc-text"> 实现流程</span></a></li></ol></li></ol></li></ol></div></div></widget>
+
+
+
+
+
+
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2024/01/24/MySQL--%E9%AB%98%E7%BA%A7%E7%BB%93%E6%9E%84/"><span class="title">MySQL--高级结构</span></a><a class="item title" href="/2024/01/22/MySQL--%E7%B4%A2%E5%BC%95/"><span class="title">MySQL--索引</span></a><a class="item title" href="/2023/05/21/MySQL--%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/"><span class="title">MySQL--存储引擎</span></a><a class="item title" href="/2023/05/15/MySQL--%E5%8D%95%E8%A1%A8%E6%93%8D%E4%BD%9C/"><span class="title">MySQL--单表操作</span></a><a class="item title" href="/2023/05/16/MySQL--%E5%A4%9A%E8%A1%A8%E6%93%8D%E4%BD%9C/"><span class="title">MySQL--多表操作</span></a><a class="item title" href="/2023/05/11/MySQL--%E5%85%A5%E9%97%A8/"><span class="title">MySQL--入门</span></a><a class="item title" href="/2024/01/26/MySQL--%E9%94%81%E6%9C%BA%E5%88%B6/"><span class="title">MySQL--锁机制</span></a><a class="item title" href="/2024/01/31/MySQL--%E8%BF%90%E7%BB%B4/"><span class="title">MySQL--运维</span></a><a class="item title active" href="/2024/01/29/MySQL--Innodb%20%E5%BC%95%E6%93%8E/"><span class="title">MySQL--Innodb引擎</span><svg class="active-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M21 11.098v4.993c0 3.096 0 4.645-.734 5.321c-.35.323-.792.526-1.263.58c-.987.113-2.14-.907-4.445-2.946c-1.02-.901-1.529-1.352-2.118-1.47a2.225 2.225 0 0 0-.88 0c-.59.118-1.099.569-2.118 1.47c-2.305 2.039-3.458 3.059-4.445 2.945a2.238 2.238 0 0 1-1.263-.579C3 20.736 3 19.188 3 16.091v-4.994C3 6.81 3 4.666 4.318 3.333C5.636 2 7.758 2 12 2c4.243 0 6.364 0 7.682 1.332C21 4.665 21 6.81 21 11.098" opacity=".5"/><path fill="currentColor" d="M9 5.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5z"/></svg></a><a class="item title" href="/2024/01/27/MySQL--SQL%20%E4%BC%98%E5%8C%96/"><span class="title">MySQL--SQL优化</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/blog/5oPLsu.jpg">
+  <div class="content">
+    
+<div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2024-01-29T02:41:02.000Z">2024-01-29</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2024-03-04T02:51:06.640Z">2024-03-04</time></span></div></div>
+</div>
+
+    
+    <div class="bottom">
+      <div class="text-area">
+        <h1 class="text title"><span>MySQL--Innodb引擎</span></h1>
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content "><h2 id="逻辑结构"><a class="markdownIt-Anchor" href="#逻辑结构"></a> 逻辑结构</h2>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/1.png" alt="" /></p>
+<h2 id="架构"><a class="markdownIt-Anchor" href="#架构"></a> 架构</h2>
+<h3 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h3>
+<p>MySQL5.5 版本开始，默认使用InnoDB存储引擎，它擅长事务处理，具有崩溃恢复特性，在日常开发中使用非常广泛。下面是InnoDB架构图，左侧为内存结构，右侧为磁盘结构。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/2.png" alt="" /></p>
+<h3 id="内存结构"><a class="markdownIt-Anchor" href="#内存结构"></a> 内存结构</h3>
+<h4 id="buffer-pool"><a class="markdownIt-Anchor" href="#buffer-pool"></a> Buffer Pool</h4>
+<p>InnoDB存储引擎基于磁盘文件存储，访问物理硬盘和在内存中进行访问，速度相差很大，为了尽可能弥补这两者之间的I/O效率的差值，就需要把经常使用的数据加载到缓冲池中，避免每次访问都进行磁盘I/O。<br />
+在InnoDB的缓冲池中不仅缓存了索引页和数据页，还包含了undo页、插入缓存、自适应哈希索引以及 InnoDB 的锁信息等等。<br />
+缓冲池 Buffer Pool，是主内存中的一个区域，里面可以缓存磁盘上经常操作的真实数据，在执行增删改查操作时，先操作缓冲池中的数据（若缓冲池没有数据，则从磁盘加载并缓存），然后再以一定频率刷新到磁盘，从而减少磁盘IO，加快处理速度。<br />
+缓冲池以Page页为单位，底层采用链表数据结构管理Page。根据状态，将Page分为三种类型：</p>
+<ul>
+<li>free page：空闲page，未被使用。</li>
+<li>clean page：被使用page，数据没有被修改过。</li>
+<li>dirty page：脏页，被使用page，数据被修改过，也中数据与磁盘的数据产生了不一致。</li>
+</ul>
+<p>在专用服务器上，通常将多达80％的物理内存分配给缓冲池 。<br />
+参数设置： <code>show variables like 'innodb_buffer_pool_size'; </code><br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/3.png" alt="" /></p>
+<h4 id="change-buffer"><a class="markdownIt-Anchor" href="#change-buffer"></a> Change Buffer</h4>
+<p>Change Buffer，更改缓冲区（针对于非唯一二级索引页），在执行DML语句时，如果这些数据Page 没有在Buffer Pool中，不会直接操作磁盘，而会将数据变更存在更改缓冲区 Change Buffer 中，在未来数据被读取时，再将数据合并恢复到Buffer Pool中，再将合并后的数据刷新到磁盘中。<br />
+存在的意义：Change Buffer的主要意义在于提高数据库的性能和减少对磁盘的IO操作。通过将数据变更存储在Change Buffer中，可以避免直接操作磁盘，而是先将数据变更存储在内存中。这样可以减少对磁盘的读写操作，提高了数据库的响应速度和性能。另外，Change Buffer还可以减少数据页的分裂，提高了数据页的利用率，从而进一步提升了数据库的整体性能。</p>
+<h4 id="adaptive-hash-index"><a class="markdownIt-Anchor" href="#adaptive-hash-index"></a> Adaptive Hash Index</h4>
+<p>自适应hash索引，用于优化对Buffer Pool数据的查询。MySQL的innoDB引擎中虽然没有直接支持 hash 索引，但是给我们提供了一个功能就是这个自适应hash索引。hash 索引在进行等值匹配时，一般性能是要高于B+树的，因为hash索引一般只需要一次IO即可，而B+树，可能需要几次匹配，所以hash索引的效率要高，但是hash索引又不适合做范围查询、模糊匹配等。<br />
+InnoDB 存储引擎会监控对表上各索引页的查询，如果观察到在特定的条件下hash索引可以提升速度，则建立hash索引，称之为自适应hash索引。**自适应哈希索引，无需人工干预，是系统根据情况自动完成。 **<br />
+参数： <code>adaptive_hash_index</code><br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/4.png" alt="" /></p>
+<h4 id="log-buffer"><a class="markdownIt-Anchor" href="#log-buffer"></a> Log Buffer</h4>
+<p>Log Buffer，日志缓冲区，用来保存要写入到磁盘中的 log 日志数据（redo log 、undo log），默认大小为 16MB，日志缓冲区的日志会定期刷新到磁盘中。如果需要更新、插入或删除许多行的事务，增加日志缓冲区的大小可以节省磁盘 I/O。<br />
+参数:</p>
+<ol>
+<li><code>innodb_log_buffer_size</code>：缓冲区大小</li>
+<li><code>innodb_flush_log_at_trx_commit</code>：日志刷新到磁盘时机，取值主要包含以下三个：
+<ul>
+<li>1: 日志在每次事务提交时写入并刷新到磁盘，默认值</li>
+<li>0: 每秒将日志写入并刷新到磁盘一次</li>
+<li>2: 日志在每次事务提交后写入，并每秒刷新到磁盘一次</li>
+</ul>
+</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/5.png" alt="" /></p>
+<h3 id="内存管理"><a class="markdownIt-Anchor" href="#内存管理"></a> 内存管理</h3>
+<h4 id="free-链表"><a class="markdownIt-Anchor" href="#free-链表"></a> Free 链表</h4>
+<p>当MySQL启动的时候，需要向操作系统申请Buffer Pool的内存空间，但是，当从磁盘上读取一个页然后存储到Buffer Pool的时候，该存放到Buffer Pool的哪个位置呢？而Buffer Pool中是存在有数据的空间和无数据的空间，那么问题又来了，怎么去区分哪些缓冲页是空闲的呢？针对这个问题，free链表就可以满足上述需求了。</p>
+<p>MySQL 启动时完成对 Buffer Pool 的初始化，先向操作系统申请连续的内存空间，然后将内存划分为若干对控制块和缓冲页。为了区分空闲和已占用的数据页，将所有空闲缓冲页对应的<strong>控制块作为一个节点</strong>放入一个链表中，就是 Free 链表（<strong>空闲链表</strong>）。</p>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/7b34265f980fcb55ec0a7630959de9fcbc1d8a81f5d539b2b588b923de428322/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de7a9bae997b2e993bee8a1a82e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/7b34265f980fcb55ec0a7630959de9fcbc1d8a81f5d539b2b588b923de428322/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de7a9bae997b2e993bee8a1a82e706e67#from=url&amp;id=tCgHM&amp;originHeight=702&amp;originWidth=1381&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<p>基节点：是一块单独申请的内存空间（占 40 字节），并不在 Buffer Pool 的那一大片连续内存空间里<br />
+磁盘加载页的流程：</p>
+<ul>
+<li>从 Free 链表中取出一个空闲的缓冲页</li>
+<li>把缓冲页对应的控制块的信息填上（页所在的表空间、页号之类的信息）</li>
+<li>把缓冲页对应的 Free 链表节点（控制块）从链表中移除，表示该缓冲页已经被使用</li>
+</ul>
+<blockquote>
+<p>参考文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/li1325169021/article/details/121124440">https://blog.csdn.net/li1325169021/article/details/121124440</a></p>
+</blockquote>
+<h4 id="flush-链表"><a class="markdownIt-Anchor" href="#flush-链表"></a> Flush 链表</h4>
+<p>Flush 链表是一个用来<strong>存储脏页</strong>的链表，对于已经修改过的缓冲脏页，第一次修改后加入到<strong>链表头部</strong>，以后每次修改都不会重新加入，只修改部分控制信息，出于性能考虑并不是直接更新到磁盘，而是在未来的某个时间进行刷脏。</p>
+<p><strong>flush链表的结构与free链表差不多，flush链表的结构如下图所示：</strong><br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/cf152599fa528f32cab5146c9706be141a4fc5a280b4a6cec411ff4241e6640a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de8848fe9a1b5e993bee8a1a82e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/cf152599fa528f32cab5146c9706be141a4fc5a280b4a6cec411ff4241e6640a/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de8848fe9a1b5e993bee8a1a82e706e67#from=url&amp;id=p158i&amp;originHeight=688&amp;originWidth=1435&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li><strong>是否会存在一个控制块既是free链表的节点，也是flush链表的节点吗？</strong>
+<ul>
+<li>不会的。因为如果一个缓冲页是空闲的，那它肯定不可能是脏页。反之亦然。</li>
+</ul>
+</li>
+</ul>
+<p><strong>后台有专门的线程每隔一段时间把脏页刷新到磁盘，刷新方式有以下两种</strong>：</p>
+<ol>
+<li>从 Flush 链表中刷新一部分页面到磁盘：
+<ol>
+<li><strong>后台线程定时</strong>从 Flush 链表刷脏，根据系统的繁忙程度来决定刷新速率，这种方式称为 BUF_FLUSH_LIST</li>
+<li>线程刷脏的比较慢，导致用户线程加载一个新的数据页时发现没有空闲缓冲页，此时会尝试从 LRU 链表尾部寻找缓冲页直接释放，如果该页面是已经修改过的脏页就<strong>同步刷新</strong>到磁盘，速度较慢，这种方式称为 BUF_FLUSH_SINGLE_PAGE</li>
+</ol>
+</li>
+<li>从 LRU 链表的冷数据中刷新一部分页面到磁盘，即：BUF_FLUSH_LRU
+<ol>
+<li>后台线程会定时从 LRU 链表的尾部开始扫描一些页面，扫描的页面数量可以通过系统变量 <code>innodb_lru_scan_depth</code> 指定，如果在 LRU 链表中发现脏页，则把它们刷新到磁盘，这种方式称为 BUF_FLUSH_LRU</li>
+<li>控制块里会存储该缓冲页是否被修改的信息，所以可以很容易的获取到某个缓冲页是否是脏页</li>
+</ol>
+</li>
+</ol>
+<blockquote>
+<p>参考文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/li1325169021/article/details/121125765">https://blog.csdn.net/li1325169021/article/details/121125765</a></p>
+</blockquote>
+<h4 id="lru-链表"><a class="markdownIt-Anchor" href="#lru-链表"></a> LRU 链表</h4>
+<p>LRU是Least Recently Used（最近最少使用）的缩写，是一种常用的缓存淘汰策略。在计算机系统中，缓存用于存储最常访问的数据，以提高访问速度。LRU算法根据数据的访问时间来决定淘汰哪些数据，具体来说，当缓存空间已满时，LRU算法会淘汰最近最少被访问的数据，以腾出空间来存储新的数据。这样可以保留最常用的数据，提高缓存的命中率，减少缓存未命中的情况。<br />
+LRU链表（LRU Linked List）是一种数据结构，用于实现LRU缓存淘汰策略。它是一个双向链表，其中每个节点都包含了缓存中的数据以及对应的键。链表的头部表示最近访问的数据，而尾部表示最久未被访问的数据。通过LRU链表，可以快速定位最近最少使用的数据，并进行淘汰，从而保持缓存的命中率较高。LRU链表的时间复杂度为O(1)，适用于需要频繁访问和更新的缓存场景，如数据库缓存、页面缓存等。</p>
+<p>Buffer Pool 需要保证缓存的命中率，所以 MySQL 创建了一个 LRU 链表，当访问某个页时：</p>
+<ul>
+<li>如果该页不在 Buffer Pool 中，把该页从磁盘加载进来后会将该缓冲页对应的控制块作为节点放入 <strong>LRU 链表的头部</strong>，保证热点数据在链表头</li>
+<li>如果该页在 Buffer Pool 中，则直接把该页对应的控制块移动到 LRU 链表的头部，所以 LRU 链表尾部就是最近最少使用的缓冲页</li>
+</ul>
+<p>MySQL 基于局部性原理提供了预读功能：</p>
+<ul>
+<li>线性预读：系统变量 <code>innodb_read_ahead_threshold</code>，如果顺序访问某个区（extent：16 KB 的页，连续 64 个形成一个区，一个区默认 1MB 大小）的页面数超过了该系统变量值，就会触发一次<strong>异步读取</strong>下一个区中全部的页面到 Buffer Pool 中</li>
+<li>随机预读：如果某个区 13 个连续的页面都被加载到 Buffer Pool，无论这些页面是否是顺序读取，都会触发一次<strong>异步读取</strong>本区所有的其他页面到 Buffer Pool 中</li>
+</ul>
+<p>预读会造成加载太多用不到的数据页，造成那些使用频率很高的数据页被挤到 LRU 链表尾部，所以 InnoDB 将 LRU 链表分成两段，<strong>冷热数据隔离</strong>：</p>
+<ul>
+<li>一部分存储使用频率很高的数据页，这部分链表也叫热数据，young 区，靠近链表头部的区域</li>
+<li>一部分存储使用频率不高的冷数据，old 区，靠近链表尾部，默认占 37%，可以通过系统变量 <code>innodb_old_blocks_pct</code> 指定</li>
+</ul>
+<p>当磁盘上的某数据页被初次加载到 Buffer Pool 中会被放入 old 区，淘汰时优先淘汰 old 区</p>
+<ul>
+<li>当对 old 区的数据进行访问时，会在控制块记录下访问时间，等待后续的访问时间与第一次访问的时间是否在某个时间间隔内，通过系统变量 <code>innodb_old_blocks_time</code> 指定时间间隔，默认 1000ms，成立就<strong>移动到 young 区的链表头部</strong></li>
+<li><code>innodb_old_blocks_time</code> 为 0 时，每次访问一个页面都会放入 young 区的头部</li>
+</ul>
+<h3 id="磁盘结构"><a class="markdownIt-Anchor" href="#磁盘结构"></a> 磁盘结构</h3>
+<ol>
+<li><strong>System Tablespace</strong></li>
+</ol>
+<p>系统表空间是更改缓冲区的存储区域。如果表是在系统表空间而不是每个表文件或通用表空间中创建的，它也可能包含表和索引数据。(在MySQL5.x版本中还包含InnoDB数据字典、undolog等)<br />
+参数：<code>innodb_data_file_path</code></p>
+<ul>
+<li>系统表空间，默认的文件名叫 ibdata1。</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/6.png" alt="" /></p>
+<ol start="2">
+<li><strong>File-Per-Table Tablespaces</strong></li>
+</ol>
+<p>如果开启了innodb_file_per_table开关 ，则每个表的文件表空间包含单个InnoDB表的数据和索引 ，并存储在文件系统上的单个数据文件中。也就是说，我们每创建一个表，都会产生一个表空间文件。<br />
+开关参数：<code>innodb_file_per_table</code> ，该参数默认开启。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/7.png" alt="" /></p>
+<ol start="3">
+<li><strong>General Tablespaces</strong></li>
+</ol>
+<p>通用表空间，需要通过 CREATE TABLESPACE 语法创建通用表空间，在创建表时，可以指定该表空间。</p>
+<ul>
+<li>创建表空间</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span>SPACE ts_name <span class="keyword">ADD</span> DATAFILE <span class="string">&#x27;file_name&#x27;</span> ENGINE <span class="operator">=</span> engine_name;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>创建表时指定表空间</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> xxx ... TABLESPACE ts_name; </span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/8.png" alt="" /></p>
+<ol start="4">
+<li><strong>Undo Tablespaces</strong></li>
+</ol>
+<p>撤销表空间，MySQL实例在初始化时会自动创建两个默认的undo表空间（初始大小16M），用于存储 undo log 日志。</p>
+<ol start="5">
+<li><strong>Temporary Tablespaces</strong></li>
+</ol>
+<p>临时表空间， InnoDB 使用会话临时表空间和全局临时表空间。存储用户创建的临时表等数据。</p>
+<ol start="6">
+<li><strong>Doublewrite Buffer Files</strong></li>
+</ol>
+<p>双写缓冲区，innoDB引擎将数据页从Buffer Pool刷新到磁盘前，先将数据页写入双写缓冲区文件中，便于系统异常时恢复数据。文件后缀名为 .dblwr。</p>
+<ol start="7">
+<li><strong>Redo Log</strong></li>
+</ol>
+<p>重做日志，是用来实现事务的持久性。该日志文件由两部分组成：重做日志缓冲（redo log buffer）以及重做日志文件（redo log）,前者是在内存中，后者在磁盘中。当事务提交之后会把所有修改信息都会存到该日志中, 用于在刷新脏页到磁盘时,发生错误时, 进行数据恢复使用。以循环方式写入重做日志文件，涉及两个文件：ib_logfile0 和 ib_logfile1。</p>
+<h3 id="后台线程"><a class="markdownIt-Anchor" href="#后台线程"></a> 后台线程</h3>
+<p>InnoDB 使用了一些后台线程来执行不同的任务，以提高数据库的性能和可靠性。下面是几个常见的 InnoDB 后台线程:</p>
+<ol>
+<li>Master Thread（主线程）</li>
+</ol>
+<p>主线程是 InnoDB 的最重要的后台线程之一。它负责处理各种关键任务，例如事务的提交和回滚，缓冲池的管理，以及刷新脏页（即写回内存中被修改但尚未写回磁盘的数据页）等。</p>
+<ol start="2">
+<li>IO Threads（IO 线程）</li>
+</ol>
+<p>IO 线程是 InnoDB 的另一个重要的后台线程组。它由多个线程组成，其中包括读取线程和写入线程。读取线程负责从磁盘读取数据页到内存中的缓冲池，写入线程负责将脏页写回到磁盘。通过使用多个 IO 线程，InnoDB 可以并行地进行数据的读写，提高了系统的并发性能。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/9.png" alt="" /><br />
+可以通过<code>show engine innodb status \G;</code>，查看到InnoDB的状态信息，其中就包含IO Thread信息。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/10.png" alt="" /></p>
+<ol start="3">
+<li>Purge Thread（清理线程）</li>
+</ol>
+<p>清理线程负责回收已经完成的事务产生的 undo 日志空间。当事务提交或回滚后，InnoDB 会将相应的 undo 日志标记为不再需要，并由清理线程负责删除这些不再需要的 undo 日志，释放相关的空间。</p>
+<ol start="4">
+<li>Page Cleaner Thread（页清理线程）</li>
+</ol>
+<p>页清理线程负责在需要时刷新脏页到磁盘，以确保系统具有足够的空闲页。当内存中的页不足时，页清理线程将会将一些脏页刷新到磁盘或者被写入其他地方，以释放内存，并提供空闲页供新数据加载到缓冲池。</p>
+<h2 id="事务原理"><a class="markdownIt-Anchor" href="#事务原理"></a> 事务原理</h2>
+<h3 id="基本概述"><a class="markdownIt-Anchor" href="#基本概述"></a> 基本概述</h3>
+<p>事务是一组操作的集合，它是一个不可分割的工作单位，事务会把所有的操作作为一个整体一起向系<br />
+统提交或撤销操作请求，即这些操作要么同时成功，要么同时失败。<br />
+特性（acid）</p>
+<ul>
+<li>原子性（Atomicity）：事务是不可分割的最小操作单元，要么全部成功，要么全部失败</li>
+<li>一致性（Consistency）：事务完成时，必须使所有的数据都保持一致状态</li>
+<li>隔离性（Isolation）：数据库系统提供的隔离机制，保证事务在不受外部并发操作影响的独立环境下运行</li>
+<li>持久性（Durability）：事务一旦提交或回滚，它对数据库中的数据的改变就是永久的</li>
+</ul>
+<p>而对于这四大特性，实际上分为两个部分。 其中的原子性、一致性、持久化，实际上是由InnoDB中的两份日志来保证的，一份是redo log日志，一份是undo log日志。 而持久性是通过数据库的锁，加上MVCC来保证的。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/11.png" alt="" /></p>
+<h3 id="redo-log"><a class="markdownIt-Anchor" href="#redo-log"></a> Redo log</h3>
+<p>重做日志，记录的是事务提交时数据页的物理修改，是用来实现事务的<strong>持久性</strong>。<br />
+该日志文件由两部分组成：重做日志缓冲（redo log buffer）以及重做日志文件（redo log file）,前者是在内存中，后者在磁盘中。当事务提交之后会把所有修改信息都存到该日志文件中, 用于在刷新脏页到磁盘,发生错误时, 进行数据恢复使用。</p>
+<p>如果没有redolog，可能会存在什么问题的？</p>
+<p>我们知道，在InnoDB引擎中的内存结构中，主要的内存区域就是缓冲池，在缓冲池中缓存了很多的数据页。 当我们在一个事务中，执行多个增删改的操作时，InnoDB引擎会先操作缓冲池中的数据，如果缓冲区没有对应的数据，会通过后台线程将磁盘中的数据加载出来，存放在缓冲区中，然后将缓冲池中的数据修改，修改后的数据页我们称为<strong>脏页</strong>。 而脏页则会在一定的时机，通过后台线程刷新到磁盘中，从而保证缓冲区与磁盘的数据一致。 而缓冲区的脏页数据并不是实时刷新的，而是<strong>一段时间之后</strong>将缓冲区的数据刷新到磁盘中，假如刷新到磁盘的过程出错了，而提示给用户事务提交成功，而数据却没有持久化下来，这就出现问题了，没有保证事务的持久性。<br />
+有了redo log之后，当对缓冲区的数据进行增删改之后，会首先将操作的数据页的变化，记录在redo log buffer中。在事务提交时，会将redo log buffer中的数据刷新到redo log磁盘文件中。过一段时间之后，如果刷新缓冲区的脏页到磁盘时，发生错误，此时就可以借助于redo log进行数据恢复，这样就保证了事务的持久性。 而如果脏页成功刷新到磁盘或者涉及到的数据已经落盘，此时 redolog就没有作用了，就可以删除了，所以存在的<strong>两个redolog文件是循环写</strong>的。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/12.png" alt="" /></p>
+<p>那为什么每一次提交事务，要刷新redo log 到磁盘中呢，而不是直接将buffer pool中的脏页刷新到磁盘呢 ?<br />
+因为在业务操作中，我们操作数据一般都是<strong>随机读写</strong>磁盘的，而不是顺序读写磁盘。 而redo log在往磁盘文件中写入数据，由于是日志文件，所以都是<strong>顺序写</strong>的。顺序写的效率，要远大于随机写。 这种先写日志的方式，称之为 <strong>WAL（Write-Ahead Logging）</strong>。</p>
+<h3 id="undo-log"><a class="markdownIt-Anchor" href="#undo-log"></a> Undo log</h3>
+<p>回滚日志，用于记录数据被修改前的信息 , 作用包含两个 :</p>
+<ul>
+<li>提供回滚 (保证事务的<strong>原子性</strong>)</li>
+<li>MVCC (多版本并发控制)</li>
+</ul>
+<p>undo log和redo log记录物理日志不一样，它是<strong>逻辑日志</strong>。可以认为当delete一条记录时，undo log中会记录一条对应的insert记录，反之亦然，当 update 一条记录时，它记录一条对应相反的 update 记录。当执行rollback时，就可以从undo log中的逻辑记录读取到相应的内容并进行回滚。<br />
+<strong>Undo log 销毁</strong>：undo log在事务执行时产生，事务提交时，并不会立即删除undo log，因为这些日志可能还用于MVCC。<br />
+<strong>Undo log 存储</strong>：undo log采用段的方式进行管理和记录，存放在前面介绍的 rollback segment 回滚段中，内部包含<strong>1024个undo log segment</strong>。</p>
+<h3 id="mvcc"><a class="markdownIt-Anchor" href="#mvcc"></a> MVCC</h3>
+<h4 id="基本概述-2"><a class="markdownIt-Anchor" href="#基本概述-2"></a> 基本概述</h4>
+<p>MVCC 全称 Multi-Version Concurrency Control，即多版本并发控制，用来<strong>解决读写冲突的无锁并发控制</strong>，可以在发生读写请求冲突时不用加锁解决，这个读是指的快照读（也叫一致性读或一致性无锁读），而不是当前读：</p>
+<ul>
+<li><strong>快照读</strong>：实现基于 MVCC，因为是多版本并发，所以快照读读到的数据不一定是当前最新的数据，有可能是历史版本的数据
+<ul>
+<li>Read Committed：每次select，都生成一个快照读</li>
+<li>Repeatable Read：开启事务后第一个select语句才是快照读的地方</li>
+<li>Serializable：快照读会退化为当前读</li>
+</ul>
+</li>
+<li><strong>当前读</strong>：又叫加锁读，读取数据库记录是当前<strong>最新的版本</strong>（产生幻读、不可重复读），可以对读取的数据进行加锁，防止其他事务修改数据，是悲观锁的一种操作，读写操作加共享锁或者排他锁和串行化事务的隔离级别都是当前读</li>
+</ul>
+<p>数据库并发场景：</p>
+<ul>
+<li>读-读：不存在任何问题，也不需要并发控制</li>
+<li>读-写：有线程安全问题，可能会造成事务隔离性问题，可能遇到脏读，幻读，不可重复读</li>
+<li>写-写：有线程安全问题，可能会存在脏写（丢失更新）问题</li>
+</ul>
+<p>MVCC 的优点：</p>
+<ul>
+<li>在并发读写数据库时，做到在读操作时不用阻塞写操作，写操作也不用阻塞读操作，提高了并发读写的性能</li>
+<li>可以解决脏读，不可重复读等事务隔离问题（加锁也能解决），但<strong>不能解决更新丢失问题</strong>（写锁会解决）</li>
+</ul>
+<p>提高读写和写写的并发性能：</p>
+<ul>
+<li>MVCC + 悲观锁：MVCC 解决读写冲突，悲观锁解决写写冲突</li>
+<li>MVCC + 乐观锁：MVCC 解决读写冲突，乐观锁解决写写冲突</li>
+</ul>
+<h4 id="隐藏字段"><a class="markdownIt-Anchor" href="#隐藏字段"></a> 隐藏字段</h4>
+<p>InnoDB 存储引擎，数据库中的<strong>聚簇索引</strong>每行数据，除了自定义的字段，还有数据库隐式定义的字段：</p>
+<ul>
+<li><strong>DB_TRX_ID</strong>：最近修改事务 ID，记录创建该数据或最后一次修改该数据的事务 ID</li>
+<li><strong>DB_ROLL_PTR</strong>：回滚指针，<strong>指向记录对应的 undo log 日志</strong>，undo log 中又指向上一个旧版本的 undo log</li>
+<li><strong>DB_ROW_ID</strong>：隐含的自增 ID（<strong>隐藏主键</strong>），如果数据表没有主键，InnoDB 会自动以 DB_ROW_ID 作为聚簇索引</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/13.png" alt="" /></p>
+<h4 id="版本链"><a class="markdownIt-Anchor" href="#版本链"></a> 版本链</h4>
+<p>undo log 是逻辑日志，记录的是每个事务对数据执行的操作，而不是记录的全部数据，要<strong>根据 undo log 逆推出以往事务的数据。</strong><br />
+undo log 的作用：</p>
+<ul>
+<li>保证事务进行 rollback 时的原子性和一致性，当事务进行回滚的时候可以用 undo log 的数据进行恢复</li>
+<li>用于 MVCC 快照读，通过读取 undo log 的历史版本数据可以实现不同事务版本号都拥有自己独立的快照数据</li>
+</ul>
+<p>undo log 主要分为两种：</p>
+<ul>
+<li>insert undo log：事务在 insert 新记录时产生的 undo log，只在事务回滚时需要，并且在事务提交后可以被立即丢弃</li>
+<li>update undo log：事务在进行 update 或 delete 时产生的 undo log，在事务回滚时需要，在快照读时也需要。不能随意删除，只有在当前读或事务回滚不涉及该日志时，对应的日志才会被 purge 线程统一清除</li>
+</ul>
+<p>每次对数据库记录进行改动，都会产生的新版本的 undo log，随着更新次数的增多，所有的版本都会被 roll_pointer 属性连接成一个链表，把这个链表称之为<strong>版本链</strong>，版本链的头节点就是当前的最新的 undo log，链尾就是最早的旧 undo log。<br />
+说明：因为 DELETE 删除记录，都是移动到垃圾链表中，不是真正的删除，所以才可以通过版本链访问原始数据。<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/4f4fa8aba25f87adaca460e59c13b2424a793614e35e3f7b654b5db63132c922/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4d564343e78988e69cace993be2e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/4f4fa8aba25f87adaca460e59c13b2424a793614e35e3f7b654b5db63132c922/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d4d564343e78988e69cace993be2e706e67#from=url&amp;id=jdEVw&amp;originHeight=429&amp;originWidth=750&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a><br />
+注意：undo 是逻辑日志，这里只是直观的展示出来。<br />
+工作流程：</p>
+<ol>
+<li>有个事务插入 persion 表一条新记录，name 为 Jerry，age 为 24</li>
+<li>事务 1 修改该行数据时，数据库会先对该行加排他锁，然后先记录 undo log，然后修改该行 name 为 Tom，并且修改隐藏字段的事务 ID 为当前事务 1 的 ID（默认为 1 之后递增），回滚指针指向拷贝到 undo log 的副本记录，事务提交后，释放锁</li>
+<li>以此类推</li>
+</ol>
+<h4 id="read-view"><a class="markdownIt-Anchor" href="#read-view"></a> Read View</h4>
+<p>Read View 是事务进行读数据操作时产生的读视图，该事务执行快照读的那一刻会生成数据库系统当前的一个快照，记录并维护系统当前活跃事务的 ID，用来做可见性判断，根据视图判断当前事务能够看到哪个版本的数据。</p>
+<p>注意：这里的快照并不是把所有的数据拷贝一份副本，而是由 undo log 记录的逻辑日志，根据库中的数据进行计算出历史数据。</p>
+<p>工作流程：将版本链的头节点的事务 ID（最新数据事务 ID，大概率不是当前线程）DB_TRX_ID 取出来，与系统当前活跃事务的 ID 对比进行可见性分析，不可见就通过 DB_ROLL_PTR 回滚指针去取出 undo log 中的下一个 DB_TRX_ID 比较，直到找到最近的满足可见性的 DB_TRX_ID，该事务 ID 所在的旧记录就是当前事务能看见的最新的记录。</p>
+<p>Read View 几个属性：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/14.png" alt="" /></p>
+<ul>
+<li><strong>m_ids</strong>：生成 Read View 时当前系统中活跃的事务 id 列表（未提交的事务集合，当前事务也在其中）</li>
+<li><strong>min_trx_id</strong>：生成 Read View 时当前系统中活跃的最小的事务 id，也就是 m_ids 中的最小值（已提交的事务集合）</li>
+<li><strong>max_trx_id</strong>：生成 Read View 时当前系统应该分配给下一个事务的 id 值，m_ids 中的最大值加 1（未开始事务）</li>
+<li><strong>creator_trx_id</strong>：生成该 Read View 的事务的事务 id，就是判断该 id 的事务能读到什么数据</li>
+</ul>
+<p>creator 创建一个 Read View，进行可见性算法分析：（解决了读未提交）</p>
+<ol>
+<li><strong>db_trx_id == creator_trx_id</strong>：表示这个数据就是当前事务自己生成的，自己生成的数据自己肯定能看见，所以此数据对 creator 是可见的</li>
+<li><strong>db_trx_id &lt; min_trx_id</strong>：该版本对应的事务 ID 小于 Read view 中的最小活跃事务 ID，则这个事务在当前事务之前就已经被提交了，对 creator 可见（因为比已提交的最大事务 ID 小的并不一定已经提交，所以应该判断是否在活跃事务列表）</li>
+<li><strong>db_trx_id &gt;= max_trx_id</strong>：该版本对应的事务 ID 大于 Read view 中当前系统的最大事务 ID，则说明该数据是在当前 Read view 创建之后才产生的，对 creator 不可见</li>
+<li><strong>min_trx_id&lt;= db_trx_id &lt; max_trx_id</strong>：判断 db_trx_id 是否在活跃事务列表 m_ids 中
+<ul>
+<li>在列表中，说明该版本对应的事务正在运行，数据不能显示（<strong>不能读到未提交的数据</strong>）</li>
+<li>不在列表中，说明该版本对应的事务已经被提交，数据可以显示（<strong>可以读到已经提交的数据</strong>）</li>
+</ul>
+</li>
+</ol>
+<h4 id="实现流程"><a class="markdownIt-Anchor" href="#实现流程"></a> 实现流程</h4>
+<p>RC隔离级别下，在事务中每一次执行快照读时生成ReadView。我们就来分析事务5中，两次快照读读取数据，是如何获取数据的?<br />
+如图，在事务5中，查询了两次id为30的记录，由于隔离级别为Read Committed，所以每一次进行快照读都会生成一个ReadView，那么两次生成的ReadView如下。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/15.png" alt="" /><br />
+那么这两次快照读在获取数据时，就需要根据所生成的ReadView以及ReadView的版本链访问规则，到undolog版本链中匹配数据，最终决定此次快照读返回的数据。</p>
+<p>先来看第一次快照读具体的读取过程：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/16.png" alt="" /><br />
+在进行匹配时，会从undo log的版本链，从上到下进行挨个匹配：</p>
+<ol>
+<li>先匹配第一条条记录，这条记录对应的 trx_id 为4，也就是将4带入右侧的匹配规则中。 ①不满足 ②不满足 ③不满足 ④也不满足，都不满足，则继续匹配undo log版本链的下一条。</li>
+<li>再匹配第二条，这条记录对应的trx_id为3，也就是将3带入右侧的匹配规则中。①不满足 ②不满足 ③不满足 ④也不满足 ，都不满足，则继续匹配undo log版本链的下一条。</li>
+<li>再匹配第三条，这条记录对应的trx_id为2，也就是将2带入右侧的匹配规则中。①不满足 ②满足，终止匹配，此次快照读，返回的数据就是版本链中记录的这条数据。</li>
+</ol>
+<p>再来看第二次快照读具体的读取过程:<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/17.png" alt="" /></p>
+<ol>
+<li>先匹配第一条记录，这条记录对应的trx_id为4，也就是将4带入右侧的匹配规则中。 ①不满足 ②不满足 ③不满足 ④也不满足 ，都不满足，则继续匹配undo log版本链的下一条。</li>
+<li>再匹配第二条，这条记录对应的trx_id为3，也就是将3带入右侧的匹配规则中。①不满足 ②满足。终止匹配，此次快照读，返回的数据就是版本链中记录的这条数据。</li>
+</ol>
+<p>RR隔离级别下，仅在事务中第一次执行快照读时生成ReadView，后续复用该ReadView。 而RR 是可重复读，在一个事务中，执行两次相同的select语句，查询到的结果是一样的。<br />
+那MySQL是如何做到可重复读的呢? 我们简单分析一下就知道了。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/18.png" alt="" /><br />
+在RR隔离级别下，只是在事务中第一次快照读时生成ReadView，后续都是复用该 ReadView，那么既然ReadView都一样， ReadView的版本链匹配规则也一样， 那么最终快照读返回的结果也是一样的。</p>
+<p>所以呢，MVCC的实现原理就是通过 InnoDB表的隐藏字段、UndoLog 版本链、ReadView来实现的。而MVCC + 锁，则实现了事务的隔离性。 而一致性则是由redolog 与 undolog保证。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--Innodbyq/19.png" alt="" /></p>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://strivingto.top/2024/01/29/MySQL--Innodb%20%E5%BC%95%E6%93%8E/" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://strivingto.top/2024/01/29/MySQL--Innodb%20%E5%BC%95%E6%93%8E/"/>
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2024/01/31/MySQL--%E8%BF%90%E7%BB%B4/">MySQL--运维</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2024/01/27/MySQL--SQL%20%E4%BC%98%E5%8C%96/">MySQL--SQL优化</a></div></section></div>
+
+  <script>
+    let tianliGPT_postSelector = 'article.content';
+    let tianliGPT_key = '9ba935841efd4f2ee0fd';
+    let tianliGPT_typingAnimate = 'true';
+    let tianliGPT_wordLimit = 100;
+  </script>
+<script defer src="https://cdn1.tianli0.top/gh/zhheo/Post-Abstract-AI@0.15.2/tianli_gpt.min.js"></script>
+
+
+<div class="related-wrap" id="related-posts">
+    <section class='header'>
+      <div class='title cap theme'>您可能感兴趣的文章</div>
+    </section>
+    <section class='body'>
+    <div class="related-posts"><a class="item" href="\2023\05\21\MySQL--存储引擎\" title="MySQL--存储引擎"><span class="title">MySQL--存储引擎</span></a><a class="item" href="\2024\01\27\MySQL--SQL 优化\" title="MySQL--SQL优化"><span class="title">MySQL--SQL优化</span></a><a class="item" href="\2023\05\15\MySQL--单表操作\" title="MySQL--单表操作"><span class="title">MySQL--单表操作</span></a><a class="item" href="\2023\05\11\MySQL--入门\" title="MySQL--入门"><span class="title">MySQL--入门</span></a><a class="item" href="\2024\01\22\MySQL--索引\" title="MySQL--索引"><span class="title">MySQL--索引</span></a></div></section></div>
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="sitemap"><div class="sitemap-group"><span class="fs15">博客</span><a href="/">首页</a><a href="/categories/">分类</a><a href="/tags/">标签</a><a href="/archives/">归档</a></div><div class="sitemap-group"><span class="fs15">项目</span><a href="/">暂无</a></div><div class="sitemap-group"><span class="fs15">社交</span><a href="/friends/">友链</a></div><div class="sitemap-group"><span class="fs15">更多</span><a href="/about/">关于本站</a><a target="_blank" rel="noopener" href="https://github.com/GIMME-JIA">GitHub</a></div></div><div class="text"><center>
+  本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">[CC BY-NC-SA 4.0]</a> 许可协议，转载请注明出处。<br/>
+  <!--不蒜子计数器-->
+  <script defer src="https://busuanzi.9420.ltd/js"></script>
+  <!--添加一个访问量-->
+<p>本页总阅读 <span id="busuanzi_page_pv"></span> 次       页总访客 <span id="busuanzi_page_uv"></span> 人<br />
+本站总访问 <span id="busuanzi_site_pv"></span> 次       本站总访客 <span id="busuanzi_site_uv"></span> 人</p>
+</center>
+</div></footer>
+<div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+<div class="main-mask" onclick="sidebar.toggle()"></div></div></div><div class="scripts">
+<script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.26.8';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.26.8';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js","marked":"/js/plugins/marked.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://cdn.bootcdn.net/ajax/libs/vanilla-lazyload/17.8.4/lazyload.min.js","transition":"fade"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://cdn.bootcdn.net/ajax/libs/scrollReveal.js/4.0.9/scrollreveal.min.js","distance":"16px","duration":800,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","flying_pages":"https://cdn.bootcdn.net/ajax/libs/flying-pages/2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.umd.min.js","css":"https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.min.css","selector":null});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied","toast":"复制成功"});
+  }
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.26.8" async></script>
+
+<!-- optional -->
+
+
+
+
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@v9/dist/mermaid.min.js"></script>
+<script>
+  var mermaid_config = {
+    startOnLoad: true,
+    theme:
+      "auto" == "auto" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "neutral",
+    logLevel: 3,
+    themeVariables: {
+      darkMode: true
+    },
+    flowchart: {
+      useMaxWidth: false,
+      htmlLabels: true,
+      curve: "linear"
+    },
+    gantt: {
+      axisFormat: "%Y/%m/%d"
+    },
+    sequence: {
+      actorMargin: 50
+    }
+  }
+  if (window.mermaid) {
+    mermaid.initialize(mermaid_config);
+  }
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

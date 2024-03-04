@@ -1,0 +1,1283 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.26.8" theme-name="Stellar" theme-version="1.26.8">
+  
+  <meta name="generator" content="Hexo 6.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>MySQL--运维 - 小破站</title>
+
+  
+    <meta name="description" content="日志  日志分类 在任何一种数据库中，都会有各种各样的日志，记录着数据库工作的过程，可以帮助数据库管理员追踪数据库曾经发生过的各种事件。 MySQL日志主要包括六种：  重做日志（redo log） 回滚日志（undo log） 归档日志（binlog）（二进制日志） 错误日志（errorlog） 慢查询日志（slow query log） 一般查询日志（general log） 中继日志（re">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL--运维">
+<meta property="og:url" content="https://strivingto.top/2024/01/31/MySQL--%E8%BF%90%E7%BB%B4/index.html">
+<meta property="og:site_name" content="小破站">
+<meta property="og:description" content="日志  日志分类 在任何一种数据库中，都会有各种各样的日志，记录着数据库工作的过程，可以帮助数据库管理员追踪数据库曾经发生过的各种事件。 MySQL日志主要包括六种：  重做日志（redo log） 回滚日志（undo log） 归档日志（binlog）（二进制日志） 错误日志（errorlog） 慢查询日志（slow query log） 一般查询日志（general log） 中继日志（re">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/1.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/2.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/3.png">
+<meta property="og:image" content="https://camo.githubusercontent.com/d863132184e210c063a28c954bcca498a5e350e992d884c11ffa5f84481c4a01/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254536253835254132254536253937254135254535254246253937254538254146254242254535253846253936312e706e67#from=url&amp;id=IJqpA&amp;originHeight=147&amp;originWidth=1059&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/97968a35d09971cbb23358ebe191a0f2161769bdb88def0d83d12b8b26a044cd/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254536253835254132254536253937254135254535254246253937254538254146254242254535253846253936322e706e67#from=url&amp;id=wwyCW&amp;originHeight=104&amp;originWidth=1057&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/4.png">
+<meta property="og:image" content="https://camo.githubusercontent.com/ccea64fc39460509866611d4f5ca7703075dc6e89ba57c09d10f268c654e63f1/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545362539462541352545372539432538426d61737465722545372538412542362545362538302538312e6a7067#from=url&amp;id=oAoJR&amp;originHeight=134&amp;originWidth=846&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/446bd5b63ea33451aca83fa3202c951dd452cae4c13c20ad26bbdc21480dfccf/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254534254238254242254534254242253845254535254134253844254535253838254236254539254141253843254538254146253831312e6a7067#from=url&amp;id=Cbpft&amp;originHeight=206&amp;originWidth=1059&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/85d0d6e5ee8f795c7588da2fbf875d4ee092d76a5eb4248cd361abd31e389d87/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254534254238254242254534254242253845254535254134253844254535253838254236254539254141253843254538254146253831322e6a7067#from=url&amp;id=PiigU&amp;originHeight=183&amp;originWidth=1057&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/5.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/6.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/7.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/8.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/9.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/10.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/11.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/12.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/13png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/14.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/15.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/16.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/17.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/18.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/19.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/20.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/21.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/22.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/23.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/24.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/25.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/26.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/27.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/28.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/29.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/30.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/31.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/32.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/33.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/34.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--yw/35.png">
+<meta property="og:image" content="https://camo.githubusercontent.com/1ea77430f196c9d5ee2b8b5ebae4b13961a83c202d0f53522a405e5740003cd5/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545382542342539462545382542442542442545352539442538372545382541312541312545342542382542422545342542422538452545352541342538442545352538382542362e6a7067#from=url&amp;id=ZKbYR&amp;originHeight=423&amp;originWidth=584&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/a086b418baf273dfd2ff6a2c85a764bc1518ae6b0cb0c7cde001b629400fd003/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545362539392541452545392538302539412545382541312541382e706e67#from=url&amp;id=fxGAa&amp;originHeight=355&amp;originWidth=655&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/9ba80610392ed279ca57e4133b89c42bd65a739e4f2361ecb52bdbf81dfa6139/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545372541432541432545342542382538302545382538432538332545352542432538462e706e67#from=url&amp;id=bbHX3&amp;originHeight=459&amp;originWidth=823&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/26657b569f64d11f9d50ecba62dd0023ca46f52c762a145548953fbbe17c29e3/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545372541432541432545342542412538432545382538432538332545352542432538462e706e67#from=url&amp;id=AsnLU&amp;originHeight=365&amp;originWidth=1054&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/f222051d7194d42c6686eca17292bc50532abdaa17f18493229cb56726b2fe05/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545372541432541432545342542382538392545382538432538332545352542432538462e706e67#from=url&amp;id=HTpu0&amp;originHeight=389&amp;originWidth=784&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/9f4ebc3df5ec9aef7c23f463fbc47b7e525e00978e833d20db8633a1739ebd0c/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545342542382538392545352541342541372545382538432538332545352542432538462e706e67#from=url&amp;id=bCypE&amp;originHeight=132&amp;originWidth=886&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="article:published_time" content="2024-01-31T02:41:02.000Z">
+<meta property="article:modified_time" content="2024-03-04T02:51:09.603Z">
+<meta property="article:author" content="JIA">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://strivingto.top/assets/post/MySQL--yw/1.png">
+  
+  
+  
+  <meta name="keywords" content="MySQL">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.26.8">
+
+  
+    <link rel="shortcut icon" href="https://i.ibb.co/t8bH857/avatar.png">
+  
+
+  
+
+  
+  
+</head>
+<body>
+
+<div class="l_body content tech" id="start" layout="post" ><aside class="l_left"><div class="sidebar-container sidebar-blur">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://i.ibb.co/t8bH857/avatar.png(/)" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">JIA</div><div class="sub normal cap">种一棵树最好的时间是十年前</div><div class="sub hover cap" style="opacity:0"> 其次是现在</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"><a class="nav-item active" title="主页" href="/" style="color:#1BCDFC"><span>主页</span></a><a class="nav-item" title="友链" href="/friends/" style="color:#F44336"><span>友链</span></a><a class="nav-item" title="关于" href="/about/" style="color:#F44336"><span>关于</span></a></nav>
+</div>
+<div class="widgets">
+
+<widget class="widget-wrapper toc single" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A5%E5%BF%97"><span class="toc-text"> 日志</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%88%86%E7%B1%BB"><span class="toc-text"> 日志分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%94%99%E8%AF%AF%E6%97%A5%E5%BF%97"><span class="toc-text"> 错误日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%97%A5%E5%BF%97"><span class="toc-text"> 二进制日志</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D"><span class="toc-text"> 基本介绍</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%88%B7%E7%9B%98"><span class="toc-text"> 日志刷盘</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E8%AF%BB%E5%8F%96"><span class="toc-text"> 日志读取</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%88%A0%E9%99%A4"><span class="toc-text"> 日志删除</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%81%A2%E5%A4%8D"><span class="toc-text"> 数据恢复</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97"><span class="toc-text"> 查询日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97"><span class="toc-text"> 慢查询日志</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BB%E4%BB%8E"><span class="toc-text"> 主从</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6"><span class="toc-text"> 主从复制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BB%E4%BB%8E%E7%BB%93%E6%9E%84"><span class="toc-text"> 主从结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BB%E4%B8%BB%E7%BB%93%E6%9E%84"><span class="toc-text"> 主主结构</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E4%BB%8E%E5%BB%B6%E8%BF%9F"><span class="toc-text"> 主从延迟</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BB%B6%E8%BF%9F%E5%8E%9F%E5%9B%A0"><span class="toc-text"> 延迟原因</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B9%B6%E8%A1%8C%E5%A4%8D%E5%88%B6"><span class="toc-text"> 并行复制</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#mysql56"><span class="toc-text"> MySQL5.6</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#mysql57"><span class="toc-text"> MySQL5.7</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E4%BB%8E%E6%90%AD%E5%BB%BA"><span class="toc-text"> 主从搭建</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#master"><span class="toc-text"> master</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#slave"><span class="toc-text"> slave</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81"><span class="toc-text"> 验证</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2"><span class="toc-text"> 主从切换</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A3%E5%B8%B8%E5%88%87%E6%8D%A2"><span class="toc-text"> 正常切换</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%81%A5%E5%BA%B7%E6%A3%80%E6%B5%8B"><span class="toc-text"> 健康检测</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E4%BD%8D%E7%82%B9"><span class="toc-text"> 基于位点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8Egtid"><span class="toc-text"> 基于GTID</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#gtid"><span class="toc-text"> GTID</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%87%E6%8D%A2"><span class="toc-text"> 切换</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8"><span class="toc-text"> 分库分表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D-2"><span class="toc-text"> 基本介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8B%86%E5%88%86%E7%AD%96%E7%95%A5"><span class="toc-text"> 拆分策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E6%8A%80%E6%9C%AF"><span class="toc-text"> 实现技术</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mycat"><span class="toc-text"> MyCat</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-text"> 概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE"><span class="toc-text"> 配置</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#schemaxml"><span class="toc-text"> schema.xml</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#rulexml"><span class="toc-text"> rule.xml</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#serverxml"><span class="toc-text"> server.xml</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E8%A1%A8"><span class="toc-text"> 全局表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E7%89%87%E8%A7%84%E5%88%99"><span class="toc-text"> 分片规则</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%8C%83%E5%9B%B4%E5%88%86%E7%89%87"><span class="toc-text"> 范围分片</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8F%96%E6%A8%A1%E5%88%86%E7%89%87"><span class="toc-text"> 取模分片</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7-hash-%E5%88%86%E7%89%87"><span class="toc-text"> 一致性 hash 分片</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%9E%9A%E4%B8%BE%E5%88%86%E7%89%87"><span class="toc-text"> 枚举分片</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E6%8C%87%E5%AE%9A%E7%AE%97%E6%B3%95%E5%88%86%E7%89%87"><span class="toc-text"> 应用指定算法分片</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%9B%BA%E5%AE%9A%E5%88%86%E7%89%87-hash-%E7%AE%97%E6%B3%95%E5%88%86%E7%89%87"><span class="toc-text"> 固定分片 hash 算法分片</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2-hash-%E8%A7%A3%E6%9E%90%E5%88%86%E7%89%87"><span class="toc-text"> 字符串 hash 解析分片</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%8C%89%E5%A4%A9%E5%88%86%E7%89%87%E7%AE%97%E6%B3%95"><span class="toc-text"> 按天分片算法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%87%AA%E7%84%B6%E6%9C%88%E5%88%86%E7%89%87"><span class="toc-text"> 自然月分片</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AE%A1%E7%90%86%E5%92%8C%E7%9B%91%E6%8E%A7"><span class="toc-text"> 管理和监控</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#mycat%E5%8E%9F%E7%90%86"><span class="toc-text"> MyCat原理</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#mycat%E7%AE%A1%E7%90%86"><span class="toc-text"> MyCat管理</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB"><span class="toc-text"> 读写分离</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%86%99%E5%BB%B6%E8%BF%9F"><span class="toc-text"> 读写延迟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AE%E4%BF%9D%E6%9C%BA%E5%88%B6"><span class="toc-text"> 确保机制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A0%E5%BB%B6%E8%BF%9F"><span class="toc-text"> 无延迟</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%8A%E5%90%8C%E6%AD%A5"><span class="toc-text"> 半同步</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AD%89%E4%BD%8D%E7%82%B9"><span class="toc-text"> 等位点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AD%89gtid"><span class="toc-text"> 等GTID</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="toc-text"> 负载均衡</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BB%BA%E8%A1%A8%E8%8C%83%E5%BC%8F"><span class="toc-text"> 建表范式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E8%8C%83%E5%BC%8F"><span class="toc-text"> 第一范式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E8%8C%83%E5%BC%8F"><span class="toc-text"> 第二范式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E8%8C%83%E5%BC%8F"><span class="toc-text"> 第三范式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text"> 总结</span></a></li></ol></li></ol></div></div></widget>
+
+
+
+
+
+
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2024/01/24/MySQL--%E9%AB%98%E7%BA%A7%E7%BB%93%E6%9E%84/"><span class="title">MySQL--高级结构</span></a><a class="item title" href="/2024/01/22/MySQL--%E7%B4%A2%E5%BC%95/"><span class="title">MySQL--索引</span></a><a class="item title" href="/2023/05/21/MySQL--%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/"><span class="title">MySQL--存储引擎</span></a><a class="item title" href="/2023/05/15/MySQL--%E5%8D%95%E8%A1%A8%E6%93%8D%E4%BD%9C/"><span class="title">MySQL--单表操作</span></a><a class="item title" href="/2023/05/16/MySQL--%E5%A4%9A%E8%A1%A8%E6%93%8D%E4%BD%9C/"><span class="title">MySQL--多表操作</span></a><a class="item title" href="/2023/05/11/MySQL--%E5%85%A5%E9%97%A8/"><span class="title">MySQL--入门</span></a><a class="item title" href="/2024/01/26/MySQL--%E9%94%81%E6%9C%BA%E5%88%B6/"><span class="title">MySQL--锁机制</span></a><a class="item title active" href="/2024/01/31/MySQL--%E8%BF%90%E7%BB%B4/"><span class="title">MySQL--运维</span><svg class="active-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M21 11.098v4.993c0 3.096 0 4.645-.734 5.321c-.35.323-.792.526-1.263.58c-.987.113-2.14-.907-4.445-2.946c-1.02-.901-1.529-1.352-2.118-1.47a2.225 2.225 0 0 0-.88 0c-.59.118-1.099.569-2.118 1.47c-2.305 2.039-3.458 3.059-4.445 2.945a2.238 2.238 0 0 1-1.263-.579C3 20.736 3 19.188 3 16.091v-4.994C3 6.81 3 4.666 4.318 3.333C5.636 2 7.758 2 12 2c4.243 0 6.364 0 7.682 1.332C21 4.665 21 6.81 21 11.098" opacity=".5"/><path fill="currentColor" d="M9 5.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5z"/></svg></a><a class="item title" href="/2024/01/29/MySQL--Innodb%20%E5%BC%95%E6%93%8E/"><span class="title">MySQL--Innodb引擎</span></a><a class="item title" href="/2024/01/27/MySQL--SQL%20%E4%BC%98%E5%8C%96/"><span class="title">MySQL--SQL优化</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/blog/5oPLsu.jpg">
+  <div class="content">
+    
+<div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2024-01-31T02:41:02.000Z">2024-01-31</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2024-03-04T02:51:09.603Z">2024-03-04</time></span></div></div>
+</div>
+
+    
+    <div class="bottom">
+      <div class="text-area">
+        <h1 class="text title"><span>MySQL--运维</span></h1>
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content "><h2 id="日志"><a class="markdownIt-Anchor" href="#日志"></a> 日志</h2>
+<h3 id="日志分类"><a class="markdownIt-Anchor" href="#日志分类"></a> 日志分类</h3>
+<p>在任何一种数据库中，都会有各种各样的日志，记录着数据库工作的过程，可以帮助数据库管理员追踪数据库曾经发生过的各种事件。<br />
+MySQL日志主要包括六种：</p>
+<ol>
+<li>重做日志（redo log）</li>
+<li>回滚日志（undo log）</li>
+<li>归档日志（binlog）（二进制日志）</li>
+<li>错误日志（errorlog）</li>
+<li>慢查询日志（slow query log）</li>
+<li>一般查询日志（general log）</li>
+<li>中继日志（relay log）</li>
+</ol>
+<h3 id="错误日志"><a class="markdownIt-Anchor" href="#错误日志"></a> 错误日志</h3>
+<p>错误日志是 MySQL 中最重要的日志之一，记录了当 mysqld 启动和停止时，以及服务器在运行过程中发生任何严重错误时的相关信息。当数据库出现任何故障导致无法正常使用时，可以首先查看此日志。<br />
+该日志是<strong>默认开启</strong>的，默认位置是：<code>/var/log/mysql/error.log</code><br />
+查看指令：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;log_error%&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>查看日志内容：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tail <span class="operator">-</span>f <span class="operator">/</span>var<span class="operator">/</span>log<span class="operator">/</span>mysql<span class="operator">/</span>error.log</span><br></pre></td></tr></table></figure>
+<h3 id="二进制日志"><a class="markdownIt-Anchor" href="#二进制日志"></a> 二进制日志</h3>
+<h4 id="基本介绍"><a class="markdownIt-Anchor" href="#基本介绍"></a> 基本介绍</h4>
+<p>二进制日志（BINLOG）也叫归档日志，是因为采用二进制进行存储，记录了所有的 DDL（数据定义语言）语句和 DML（数据操作语言）语句，但<strong>不包括数据查询语句，在事务提交前的最后阶段写入。</strong><br />
+作用：<strong>灾难时的数据恢复和 MySQL 的主从复制</strong><br />
+归档日志<strong>默认情况下是没有开启</strong>的，需要在 MySQL 配置文件中开启，并配置 MySQL 日志的格式：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cd <span class="operator">/</span>etc<span class="operator">/</span>mysql</span><br><span class="line">vim my.cnf</span><br><span class="line"></span><br><span class="line"># 配置开启binlog日志， 日志的文件前缀为 mysqlbin <span class="comment">-----&gt; 生成的文件名如: mysqlbin.000001</span></span><br><span class="line">log_bin<span class="operator">=</span>mysqlbin</span><br><span class="line"># 配置二进制日志的格式</span><br><span class="line">binlog_format<span class="operator">=</span>STATEMENT</span><br></pre></td></tr></table></figure>
+<p>日志存放位置：配置时给定了文件名但是没有指定路径，日志默认写入MySQL 的数据目录。<br />
+日志格式：</p>
+<ol>
+<li><strong>STATEMENT</strong>：该日志格式在日志文件中记录的都是 <strong>SQL 语句</strong>，每一条对数据进行修改的 SQL 都会记录在日志文件中，通过 mysqlbinlog 工具，可以查看到每条语句的文本。主从复制时，从库会将日志解析为原语句，并在从库重新执行一遍缺点：可能会导致主备不一致，因为记录的 SQL 在不同的环境中可能选择的索引不同，导致结果不同</li>
+<li><strong>ROW</strong>：该日志格式在日志文件中记录的是每一行的<strong>数据变更</strong>，而不是记录 SQL 语句。比如执行 SQL 语句 <code>update tb_book set status='1'</code>，如果是 STATEMENT，在日志中会记录一行 SQL 语句； 如果是 ROW，由于是对全表进行更新，就是每一行记录都会发生变更，ROW 格式的日志中会记录每一行的数据变更缺点：记录的数据比较多，占用很多的存储空间</li>
+<li><strong>MIXED</strong>：这是 MySQL 默认的日志格式，混合了STATEMENT 和 ROW 两种格式，MIXED 格式能尽量利用两种模式的优点，而避开它们的缺点</li>
+</ol>
+<h4 id="日志刷盘"><a class="markdownIt-Anchor" href="#日志刷盘"></a> 日志刷盘</h4>
+<p>事务执行过程中，先将日志写（write）到 binlog cache，事务提交时再把 binlog cache 写（fsync）到 binlog 文件中，一个事务的 binlog 是不能被拆开的，所以不论这个事务多大也要确保一次性写入。<br />
+事务提交时执行器把 binlog cache 里的完整事务写入到 binlog 中，并清空 binlog cache。<br />
+write 和 fsync 的时机由参数 sync_binlog 控制的：</p>
+<ul>
+<li><strong>sync_binlog=0</strong>：表示每次提交事务都只 write，不 fsync</li>
+<li><strong>sync_binlog=1</strong>：表示每次提交事务都会执行 fsync</li>
+<li><strong>sync_binlog=N(N&gt;1)</strong>：表示每次提交事务都 write，但累积 N 个事务后才 fsync，但是如果主机发生异常重启，会丢失最近 N 个事务的 binlog 日志</li>
+</ul>
+<h4 id="日志读取"><a class="markdownIt-Anchor" href="#日志读取"></a> 日志读取</h4>
+<p>日志文件存储位置：<code>/var/lib/mysql</code><br />
+由于日志以二进制方式存储，不能直接读取，需要用 mysqlbinlog 工具来查看，语法如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqlbinlog log<span class="operator">-</span>file;</span><br></pre></td></tr></table></figure>
+<p>查看 STATEMENT 格式日志：</p>
+<ul>
+<li>执行插入语句：INSERT INTO tb_book VALUES(NULL,‘Lucene’,‘2088-05-01’,‘0’);</li>
+<li><code>cd /var/lib/mysql</code>：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator">-</span>rw<span class="operator">-</span>r<span class="comment">-----  1 mysql mysql      177 5月  23 21:08 mysqlbin.000001</span></span><br><span class="line"><span class="operator">-</span>rw<span class="operator">-</span>r<span class="comment">-----  1 mysql mysql       18 5月  23 21:04 mysqlbin.index</span></span><br></pre></td></tr></table></figure>
+<p>mysqlbin.index：该文件是日志索引文件 ， 记录日志的文件名；<br />
+mysqlbing.000001：日志文件</p>
+<ul>
+<li>查看日志内容：日志结尾有 COMMIT</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqlbinlog mysqlbing<span class="number">.000001</span>;</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/1.png" alt="" /></p>
+<p>查看 ROW 格式日志：</p>
+<ul>
+<li>修改配置：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 配置二进制日志的格式</span><br><span class="line">binlog_format<span class="operator">=</span><span class="type">ROW</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>插入数据：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> tb_book <span class="keyword">VALUES</span>(<span class="keyword">NULL</span>,<span class="string">&#x27;SpringCloud实战&#x27;</span>,<span class="string">&#x27;2088-05-05&#x27;</span>,<span class="string">&#x27;0&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看日志内容：日志格式 ROW，直接查看数据是乱码，可以在 mysqlbinlog 后面加上参数 -vv</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqlbinlog <span class="operator">-</span>vv mysqlbin<span class="number">.000002</span></span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/2.png" alt="" /></p>
+<h4 id="日志删除"><a class="markdownIt-Anchor" href="#日志删除"></a> 日志删除</h4>
+<p>对于比较繁忙的系统，生成日志量大，这些日志如果长时间不清除，将会占用大量的磁盘空间，需要删除日志</p>
+<ul>
+<li>Reset Master 指令删除全部 binlog 日志，删除之后，日志编号将从 xxxx.000001重新开始</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Reset Master	<span class="comment">-- MySQL指令</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>执行指令 <code>PURGE MASTER LOGS TO 'mysqlbin.***</code>，该命令将删除  *** 编号之前的所有日志</li>
+<li>执行指令 <code>PURGE MASTER LOGS BEFORE 'yyyy-mm-dd hh:mm:ss'</code> ，该命令将删除日志为 yyyy-mm-dd hh:mm:ss 之前产生的日志</li>
+<li>设置参数 <code>--expire_logs_days=#</code>，此参数的含义是设置日志的过期天数，过了指定的天数后日志将会被自动删除，这样做有利于减少管理日志的工作量，配置 my.cnf 文件：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">log_bin<span class="operator">=</span>mysqlbin</span><br><span class="line">binlog_format<span class="operator">=</span><span class="type">ROW</span></span><br><span class="line"><span class="comment">--expire_logs_days=3</span></span><br></pre></td></tr></table></figure>
+<h4 id="数据恢复"><a class="markdownIt-Anchor" href="#数据恢复"></a> 数据恢复</h4>
+<p>误删库或者表时，需要根据 binlog 进行数据恢复。<br />
+一般情况下数据库有定时的全量备份，假如每天 0 点定时备份，12 点误删了库，恢复流程：</p>
+<ol>
+<li>取最近一次全量备份，用备份恢复出一个临时库</li>
+<li>从日志文件中取出凌晨 0 点之后的日志</li>
+<li>把除了误删除数据的语句外日志，全部应用到临时库</li>
+</ol>
+<p>跳过误删除语句日志的方法：</p>
+<ul>
+<li>如果原实例没有使用 GTID 模式，只能在应用到包含 12 点的 binlog 文件的时候，先用 –stop-position 参数执行到误操作之前的日志，然后再用 –start-position 从误操作之后的日志继续执行</li>
+<li>如果实例使用了 GTID 模式，假设误操作命令的 GTID 是 gtid1，那么只需要提交一个空事务先将这个 GTID 加到临时实例的 GTID 集合，之后按顺序执行 binlog 的时就会自动跳过误操作的语句</li>
+</ul>
+<h3 id="查询日志"><a class="markdownIt-Anchor" href="#查询日志"></a> 查询日志</h3>
+<p>查询日志中记录了客户端的所有操作语句，而二进制日志不包含查询数据的 SQL 语句。<br />
+默认情况下，<strong>查询日志是未开启的</strong>，因为对于一些业务繁忙的系统，该查询日志文件占用的内存将会变得非常大，一般不建议开启。如果需要开启查询日志，配置 my.cnf：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 该选项用来开启查询日志，可选值<span class="number">0</span>或者<span class="number">1</span>，<span class="number">0</span>代表关闭，<span class="number">1</span>代表开启 </span><br><span class="line">general_log<span class="operator">=</span><span class="number">1</span></span><br><span class="line"># 设置日志的文件名，如果没有指定，默认的文件名为host_name.log，存放在<span class="operator">/</span>var<span class="operator">/</span>lib<span class="operator">/</span>mysql</span><br><span class="line">general_log_file<span class="operator">=</span>mysql_query.log</span><br></pre></td></tr></table></figure>
+<p>配置完毕之后，在数据库执行以下操作：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tb_book;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tb_book <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">UPDATE</span> tb_book <span class="keyword">SET</span> name <span class="operator">=</span> <span class="string">&#x27;lucene入门指南&#x27;</span> <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tb_book <span class="keyword">WHERE</span> id <span class="operator">&lt;</span> <span class="number">8</span></span><br></pre></td></tr></table></figure>
+<p>执行完毕之后， 再次来查询日志文件：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/3.png" alt="" /></p>
+<h3 id="慢查询日志"><a class="markdownIt-Anchor" href="#慢查询日志"></a> 慢查询日志</h3>
+<p>慢查询日志记录所有执行时间超过 long_query_time 并且扫描记录数不小于 <strong>min_examined_row_limit</strong> 的所有的 SQL 语句的日志 long_query_time 默认为 10 秒，最小为 0， 精度到微秒。<br />
+慢查询日志<strong>默认是关闭</strong>的，可以通过两个参数来控制慢查询日志，配置文件 <code>/etc/mysql/my.cnf</code>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 该参数用来控制慢查询日志是否开启，可选值<span class="number">0</span>或者<span class="number">1</span>，<span class="number">0</span>代表关闭，<span class="number">1</span>代表开启 </span><br><span class="line">slow_query_log<span class="operator">=</span><span class="number">1</span> </span><br><span class="line"></span><br><span class="line"># 该参数用来指定慢查询日志的文件名，存放在 <span class="operator">/</span>var<span class="operator">/</span>lib<span class="operator">/</span>mysql</span><br><span class="line">slow_query_log_file<span class="operator">=</span>slow_query.log</span><br><span class="line"></span><br><span class="line"># 该选项用来配置查询的时间限制，超过这个时间将认为值慢查询，将需要进行日志记录，默认<span class="number">10</span>s</span><br><span class="line">long_query_time<span class="operator">=</span><span class="number">10</span></span><br></pre></td></tr></table></figure>
+<p>日志读取：</p>
+<ul>
+<li>直接通过 cat 指令查询该日志文件：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat slow_query.log</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/d863132184e210c063a28c954bcca498a5e350e992d884c11ffa5f84481c4a01/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254536253835254132254536253937254135254535254246253937254538254146254242254535253846253936312e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/d863132184e210c063a28c954bcca498a5e350e992d884c11ffa5f84481c4a01/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254536253835254132254536253937254135254535254246253937254538254146254242254535253846253936312e706e67#from=url&amp;id=IJqpA&amp;originHeight=147&amp;originWidth=1059&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>如果慢查询日志内容很多，直接查看文件比较繁琐，可以借助 mysql 自带的 mysqldumpslow 工具对慢查询日志进行分类汇总：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldumpslow slow_query.log</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/97968a35d09971cbb23358ebe191a0f2161769bdb88def0d83d12b8b26a044cd/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254536253835254132254536253937254135254535254246253937254538254146254242254535253846253936322e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/97968a35d09971cbb23358ebe191a0f2161769bdb88def0d83d12b8b26a044cd/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254536253835254132254536253937254135254535254246253937254538254146254242254535253846253936322e706e67#from=url&amp;id=wwyCW&amp;originHeight=104&amp;originWidth=1057&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h2 id="主从"><a class="markdownIt-Anchor" href="#主从"></a> 主从</h2>
+<h3 id="主从复制"><a class="markdownIt-Anchor" href="#主从复制"></a> 主从复制</h3>
+<h4 id="主从结构"><a class="markdownIt-Anchor" href="#主从结构"></a> 主从结构</h4>
+<p>主从复制是指将主数据库的 DDL 和 DML 操作通过二进制日志传到从库服务器中，然后在从库上对这些日志重新执行（也叫重做），从而使得从库和主库的数据保持同步。</p>
+<p>MySQL 的主从之间维持了一个<strong>长连接</strong>。主库内部有一个线程，专门用于服务从库的长连接，连接过程：</p>
+<ul>
+<li>从库执行 change master 命令，设置主库的 IP、端口、用户名、密码以及要从哪个位置开始请求 binlog，这个位置包含文件名和日志偏移量</li>
+<li>从库执行 start slave 命令，这时从库会启动两个线程，就是图中的 io_thread 和 sql_thread，其中 io_thread 负责与主库建立连接</li>
+<li>主库校验完用户名、密码后，开始按照从传过来的位置，从本地读取 binlog 发给从库，开始主从复制</li>
+</ul>
+<p>MySQL 支持一台主库同时向多台从库进行复制，从库同时也可以作为其他从服务器的主库，实现链状复制。<br />
+MySQL 复制的优点主要包含以下三个方面：</p>
+<ul>
+<li>主库出现问题，可以快速切换到从库提供服务</li>
+<li>可以在从库上执行查询操作，从主库中更新，实现读写分离</li>
+<li>可以在从库中执行备份，以避免备份期间影响主库的服务（<strong>备份时会加全局读锁</strong>）</li>
+</ul>
+<p>实现原理：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/4.png" alt="" /></p>
+<p>主从复制主要依赖的是 binlog，MySQL 默认是异步复制，需要三个线程：</p>
+<ol>
+<li>binlog thread：在主库事务提交时，把数据变更记录在日志文件 binlog 中，并通知 slave 有数据更新</li>
+<li>I/O thread：负责从主服务器上<strong>拉取二进制日志</strong>，并将 binlog 日志内容依次写到 relay log 中转日志的最末端，并将新的 binlog 文件名和 offset 记录到 master-info 文件中，以便下一次读取日志时从指定 binlog 日志文件及位置开始读取新的 binlog 日志内容</li>
+<li>SQL thread：监测本地 relay log 中新增了日志内容，读取中继日志并重做其中的 SQL 语句，从库在 <a target="_blank" rel="noopener" href="http://relay-log.info">relay-log.info</a> 中记录当前应用中继日志的文件名和位点以便下一次执行</li>
+</ol>
+<p>同步与异步：</p>
+<ul>
+<li>异步复制有数据丢失风险，例如数据还未同步到从库，主库就给客户端响应，然后主库挂了，此时从库晋升为主库的话数据是缺失的</li>
+<li>同步复制，主库需要将 binlog 复制到所有从库，等所有从库响应了之后主库才进行其他逻辑，这样的话性能很差，一般不会选择</li>
+<li>MySQL 5.7 之后出现了半同步复制，有参数可以选择成功同步几个从库就返回响应</li>
+</ul>
+<h4 id="主主结构"><a class="markdownIt-Anchor" href="#主主结构"></a> 主主结构</h4>
+<p>主主结构就是两个数据库之间总是互为主从关系，这样在切换的时候就不用再修改主从关系。<br />
+循环复制：在库 A 上更新了一条语句，然后把生成的 binlog 发给库 B，库 B 执行完这条更新语句后也会生成 binlog，会再发给 A。<br />
+解决方法：</p>
+<ul>
+<li>两个库的 server id 必须不同，如果相同则它们之间不能设定为主主关系</li>
+<li>一个库接到 binlog 并在重放的过程中，生成与原 binlog 的 server id 相同的新的 binlog</li>
+<li>每个库在收到从主库发过来的日志后，先判断 server id，如果跟自己的相同，表示这个日志是自己生成的，就直接丢弃这个日志</li>
+</ul>
+<h3 id="主从延迟"><a class="markdownIt-Anchor" href="#主从延迟"></a> 主从延迟</h3>
+<h4 id="延迟原因"><a class="markdownIt-Anchor" href="#延迟原因"></a> 延迟原因</h4>
+<p>正常情况主库执行更新生成的所有 binlog，都可以传到从库并被正确地执行，从库就能达到跟主库一致的状态，这就是最终一致性。<br />
+主从延迟是主从之间是存在一定时间的数据不一致，就是同一个事务在从库执行完成的时间和主库执行完成的时间的差值，即 T2-T1。</p>
+<ul>
+<li>主库 A 执行完成一个事务，写入 binlog，该时刻记为 T1</li>
+<li>日志传给从库 B，从库 B 执行完这个事务，该时刻记为 T2</li>
+</ul>
+<p>通过在从库执行 <code>show slave status</code> 命令，返回结果会显示 seconds_behind_master 表示当前从库延迟了多少秒。</p>
+<ul>
+<li>每一个事务的 binlog 都有一个时间字段，用于记录主库上写入的时间</li>
+<li>从库取出当前正在执行的事务的时间字段，跟系统的时间进行相减，得到的就是 seconds_behind_master</li>
+</ul>
+<p>主从延迟的原因：</p>
+<ul>
+<li>从库的机器性能比主库的差，导致从库的复制能力弱</li>
+<li>从库的查询压力大，建立一主多从的结构</li>
+<li>大事务的执行，主库必须要等到事务完成之后才会写入 binlog，导致从节点出现应用 binlog 延迟</li>
+<li>主库的 DDL，从库与主库的 DDL 同步是串行进行，DDL 在主库执行时间很长，那么从库也会消耗同样的时间</li>
+<li>锁冲突问题也可能导致从节点的 SQL 线程执行慢</li>
+</ul>
+<p>主从同步问题永远都是<strong>一致性和性能的权衡</strong>，需要根据实际的应用场景，可以采取下面的办法：</p>
+<ul>
+<li>优化 SQL，避免慢 SQL，减少批量操作</li>
+<li>降低多线程大事务并发的概率，优化业务逻辑</li>
+<li>业务中大多数情况查询操作要比更新操作更多，搭建<strong>一主多从</strong>结构，让这些从库来分担读的压力</li>
+<li>尽量采用短的链路，主库和从库服务器的距离尽量要短，提升端口带宽，减少 binlog 传输的网络延时</li>
+<li>实时性要求高的业务读强制走主库，从库只做备份</li>
+</ul>
+<h4 id="并行复制"><a class="markdownIt-Anchor" href="#并行复制"></a> 并行复制</h4>
+<h5 id="mysql56"><a class="markdownIt-Anchor" href="#mysql56"></a> MySQL5.6</h5>
+<p>高并发情况下，主库的会产生大量的 binlog，在从库中有两个线程 IO Thread 和 SQL Thread 单线程执行，会导致主库延迟变大。为了改善复制延迟问题，MySQL 5.6 版本增加了并行复制功能，以采用多线程机制来促进执行。<br />
+coordinator 就是原来的 SQL Thread，并行复制中它不再直接更新数据，<strong>只负责读取中转日志和分发事务</strong>：</p>
+<ul>
+<li>线程分配完成并不是立即执行，为了防止造成更新覆盖，更新同一 DB 的两个事务必须被分发到同一个工作线程</li>
+<li>同一个事务不能被拆开，必须放到同一个工作线程</li>
+</ul>
+<p>MySQL 5.6 版本的策略：每个线程对应一个 hash 表，用于保存当前这个线程的执行队列里的事务所涉及的表，hash 表的 key 是数据库名，value 是一个数字，表示队列中有多少个事务修改这个库，适用于主库上有多个 DB 的情况。</p>
+<p>每个事务在分发的时候，跟线程的<strong>冲突</strong>（事务操作的是同一个库）关系包括以下三种情况：</p>
+<ul>
+<li>如果跟所有线程都不冲突，coordinator 线程就会把这个事务分配给最空闲的线程</li>
+<li>如果只跟一个线程冲突，coordinator 线程就会把这个事务分配给这个存在冲突关系的线程</li>
+<li>如果跟多于一个线程冲突，coordinator 线程就进入等待状态，直到和这个事务存在冲突关系的线程只剩下 1 个</li>
+</ul>
+<p>优缺点：</p>
+<ul>
+<li>构造 hash 值的时候很快，只需要库名，而且一个实例上 DB 数也不会很多，不会出现需要构造很多项的情况</li>
+<li>不要求 binlog 的格式，statement 格式的 binlog 也可以很容易拿到库名（日志章节详解了 binlog）</li>
+<li>主库上的表都放在同一个 DB 里面，这个策略就没有效果了；或者不同 DB 的热点不同，比如一个是业务逻辑库，一个是系统配置库，那也起不到并行的效果，需要<strong>把相同热度的表均匀分到这些不同的 DB 中</strong>，才可以使用这个策略</li>
+</ul>
+<h5 id="mysql57"><a class="markdownIt-Anchor" href="#mysql57"></a> MySQL5.7</h5>
+<p>MySQL 5.7 由参数 slave-parallel-type 来控制并行复制策略：</p>
+<ul>
+<li>配置为 DATABASE，表示使用 MySQL 5.6 版本的<strong>按库（DB）并行策略</strong></li>
+<li>配置为 LOGICAL_CLOCK，表示的<strong>按提交状态并行</strong>执行</li>
+</ul>
+<p>按提交状态并行复制策略的思想是：</p>
+<ul>
+<li>所有处于 commit 状态的事务可以并行执行；同时处于 prepare 状态的事务，在从库执行时是可以并行的</li>
+<li>处于 prepare 状态的事务，与处于 commit 状态的事务之间，在从库执行时也是可以并行的</li>
+</ul>
+<p>MySQL 5.7.22 版本里，MySQL 增加了一个新的并行复制策略，基于 WRITESET 的并行复制，新增了一个参数 binlog-transaction-dependency-tracking，用来控制是否启用这个新策略：</p>
+<ul>
+<li>COMMIT_ORDER：表示根据同时进入 prepare 和 commit 来判断是否可以并行的策略</li>
+<li>WRITESET：表示的是对于每个事务涉及更新的每一行，计算出这一行的 hash 值，组成该事务的 writeset 集合，如果两个事务没有操作相同的行，也就是说它们的 writeset 没有交集，就可以并行（<strong>按行并行</strong>）为了唯一标识，这个 hash 表的值是通过 库名 + 表名 + 索引名 + 值（表示的是某一行）计算出来的</li>
+<li>WRITESET_SESSION：是在 WRITESET 的基础上多了一个约束，即在主库上同一个线程先后执行的两个事务，在备库执行的时候，要保证相同的先后顺序</li>
+</ul>
+<p>MySQL 5.7.22 按行并发的优势：</p>
+<ul>
+<li>writeset 是在主库生成后直接写入到 binlog 里面的，这样在备库执行的时候，不需要解析 binlog 内容，节省了计算量</li>
+<li>不需要把整个事务的 binlog 都扫一遍才能决定分发到哪个线程，更省内存</li>
+<li>从库的分发策略不依赖于 binlog 内容，所以 binlog 是 statement 格式也可以，更节约内存（因为 row 才记录更改的行）</li>
+</ul>
+<p>MySQL 5.7.22 的并行复制策略在通用性上是有保证的，但是对于表上没主键、唯一和外键约束的场景，WRITESET 策略也是没法并行的，也会暂时退化为单线程模型。</p>
+<h3 id="主从搭建"><a class="markdownIt-Anchor" href="#主从搭建"></a> 主从搭建</h3>
+<h4 id="master"><a class="markdownIt-Anchor" href="#master"></a> master</h4>
+<ol>
+<li>在master 的配置文件（/etc/mysql/my.cnf）中，配置如下内容：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">#mysql 服务ID,保证整个集群环境中唯一</span><br><span class="line">server<span class="operator">-</span>id<span class="operator">=</span><span class="number">1</span></span><br><span class="line"></span><br><span class="line">#mysql binlog 日志的存储路径和文件名</span><br><span class="line">log<span class="operator">-</span>bin<span class="operator">=</span><span class="operator">/</span>var<span class="operator">/</span>lib<span class="operator">/</span>mysql<span class="operator">/</span>mysqlbin</span><br><span class="line"></span><br><span class="line">#错误日志,默认已经开启</span><br><span class="line">#log<span class="operator">-</span>err</span><br><span class="line"></span><br><span class="line">#mysql的安装目录</span><br><span class="line">#basedir</span><br><span class="line"></span><br><span class="line">#mysql的临时目录</span><br><span class="line">#tmpdir</span><br><span class="line"></span><br><span class="line">#mysql的数据存放目录</span><br><span class="line">#datadir</span><br><span class="line"></span><br><span class="line">#是否只读,<span class="number">1</span> 代表只读, <span class="number">0</span> 代表读写</span><br><span class="line">read<span class="operator">-</span><span class="keyword">only</span><span class="operator">=</span><span class="number">0</span></span><br><span class="line"></span><br><span class="line">#忽略的数据, 指不需要同步的数据库</span><br><span class="line">binlog<span class="operator">-</span>ignore<span class="operator">-</span>db<span class="operator">=</span>mysql</span><br><span class="line"></span><br><span class="line">#指定同步的数据库</span><br><span class="line">#binlog<span class="operator">-</span>do<span class="operator">-</span>db<span class="operator">=</span>db01</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>执行完毕之后，需要重启 MySQL</li>
+<li>创建同步数据的账户，并且进行授权操作：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GRANT</span> REPLICATION SLAVE <span class="keyword">ON</span> <span class="operator">*</span>.<span class="operator">*</span> <span class="keyword">TO</span> <span class="string">&#x27;seazean&#x27;</span>@<span class="string">&#x27;192.168.0.137&#x27;</span> IDENTIFIED <span class="keyword">BY</span> <span class="string">&#x27;123456&#x27;</span>;</span><br><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>
+<p>查看 master 状态：SHOW MASTER STATUS;<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/ccea64fc39460509866611d4f5ca7703075dc6e89ba57c09d10f268c654e63f1/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545362539462541352545372539432538426d61737465722545372538412542362545362538302538312e6a7067"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/ccea64fc39460509866611d4f5ca7703075dc6e89ba57c09d10f268c654e63f1/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545362539462541352545372539432538426d61737465722545372538412542362545362538302538312e6a7067#from=url&amp;id=oAoJR&amp;originHeight=134&amp;originWidth=846&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>File：从哪个日志文件开始推送日志文件</li>
+<li>Position：从哪个位置开始推送日志</li>
+<li>Binlog_Ignore_DB：指定不需要同步的数据库</li>
+</ul>
+</li>
+</ol>
+<h4 id="slave"><a class="markdownIt-Anchor" href="#slave"></a> slave</h4>
+<ol>
+<li>在 slave 端配置文件中，配置如下内容：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#mysql服务端ID,唯一</span><br><span class="line">server<span class="operator">-</span>id<span class="operator">=</span><span class="number">2</span></span><br><span class="line"></span><br><span class="line">#指定binlog日志</span><br><span class="line">log<span class="operator">-</span>bin<span class="operator">=</span><span class="operator">/</span>var<span class="operator">/</span>lib<span class="operator">/</span>mysql<span class="operator">/</span>mysqlbin</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>执行完毕之后，需要重启 MySQL</li>
+<li>指定当前从库对应的主库的IP地址、用户名、密码，从哪个日志文件开始的那个位置开始同步推送日志</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CHANGE MASTER <span class="keyword">TO</span> MASTER_HOST<span class="operator">=</span> <span class="string">&#x27;192.168.0.138&#x27;</span>, MASTER_USER<span class="operator">=</span><span class="string">&#x27;seazean&#x27;</span>, MASTER_PASSWORD<span class="operator">=</span><span class="string">&#x27;seazean&#x27;</span>, MASTER_LOG_FILE<span class="operator">=</span><span class="string">&#x27;mysqlbin.000001&#x27;</span>, MASTER_LOG_POS<span class="operator">=</span><span class="number">413</span>;</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>开启同步操作：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">START</span> SLAVE;</span><br><span class="line"><span class="keyword">SHOW</span> SLAVE STATUS;</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>停止同步操作：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">STOP SLAVE;</span><br></pre></td></tr></table></figure>
+<h4 id="验证"><a class="markdownIt-Anchor" href="#验证"></a> 验证</h4>
+<ol>
+<li>在主库中创建数据库，创建表并插入数据：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> DATABASE db01;</span><br><span class="line">USE db01;</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="keyword">user</span>(</span><br><span class="line">  id <span class="type">INT</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  name <span class="type">VARCHAR</span>(<span class="number">50</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  sex <span class="type">VARCHAR</span>(<span class="number">1</span>),</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (id)</span><br><span class="line">)ENGINE<span class="operator">=</span>INNODB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8;</span><br><span class="line"></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> <span class="keyword">user</span>(id,NAME,sex) <span class="keyword">VALUES</span>(<span class="keyword">NULL</span>,<span class="string">&#x27;Tom&#x27;</span>,<span class="string">&#x27;1&#x27;</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> <span class="keyword">user</span>(id,NAME,sex) <span class="keyword">VALUES</span>(<span class="keyword">NULL</span>,<span class="string">&#x27;Trigger&#x27;</span>,<span class="string">&#x27;0&#x27;</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> <span class="keyword">user</span>(id,NAME,sex) <span class="keyword">VALUES</span>(<span class="keyword">NULL</span>,<span class="string">&#x27;Dawn&#x27;</span>,<span class="string">&#x27;1&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>在从库中查询数据，进行验证：在从库中，可以查看到刚才创建的数据库：</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/446bd5b63ea33451aca83fa3202c951dd452cae4c13c20ad26bbdc21480dfccf/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254534254238254242254534254242253845254535254134253844254535253838254236254539254141253843254538254146253831312e6a7067"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/446bd5b63ea33451aca83fa3202c951dd452cae4c13c20ad26bbdc21480dfccf/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254534254238254242254534254242253845254535254134253844254535253838254236254539254141253843254538254146253831312e6a7067#from=url&amp;id=Cbpft&amp;originHeight=206&amp;originWidth=1059&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<p>在该数据库中，查询表中的数据：</p>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/85d0d6e5ee8f795c7588da2fbf875d4ee092d76a5eb4248cd361abd31e389d87/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254534254238254242254534254242253845254535254134253844254535253838254236254539254141253843254538254146253831322e6a7067"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/85d0d6e5ee8f795c7588da2fbf875d4ee092d76a5eb4248cd361abd31e389d87/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d254534254238254242254534254242253845254535254134253844254535253838254236254539254141253843254538254146253831322e6a7067#from=url&amp;id=PiigU&amp;originHeight=183&amp;originWidth=1057&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h3 id="主从切换"><a class="markdownIt-Anchor" href="#主从切换"></a> 主从切换</h3>
+<h4 id="正常切换"><a class="markdownIt-Anchor" href="#正常切换"></a> 正常切换</h4>
+<p>正常切换步骤：</p>
+<ul>
+<li>在开始切换之前先对主库进行锁表 <code>flush tables with read lock</code>，然后等待所有语句执行完成，切换完成后可以释放锁</li>
+<li>检查 slave 同步状态，在 slave 执行 <code>show processlist</code></li>
+<li>停止 slave io 线程，执行命令 <code>STOP SLAVE IO_THREAD</code></li>
+<li>提升 slave 为 master</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Stop slave;</span><br><span class="line">Reset master;</span><br><span class="line">Reset slave <span class="keyword">all</span>;</span><br><span class="line"><span class="keyword">set</span> <span class="keyword">global</span> read_only<span class="operator">=</span>off;	<span class="comment">-- 设置为可更新状态</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>将原来 master 变为 slave（参考搭建流程中的 slave 方法）</li>
+</ul>
+<p><strong>可靠性优先策略</strong>：</p>
+<ul>
+<li>判断备库 B 现在的 seconds_behind_master，如果小于某个值（比如 5 秒）继续下一步，否则持续重试这一步</li>
+<li>把主库 A 改成只读状态，即把 readonly 设置为 true</li>
+<li>判断备库 B 的 seconds_behind_master 的值，直到这个值变成 0 为止（该步骤比较耗时，所以步骤 1 中要尽量等待该值变小）</li>
+<li>把备库 B 改成可读写状态，也就是把 readonly 设置为 false</li>
+<li>把业务请求切到备库 B</li>
+</ul>
+<p>可用性优先策略：先做最后两步，会造成主备数据不一致的问题</p>
+<h4 id="健康检测"><a class="markdownIt-Anchor" href="#健康检测"></a> 健康检测</h4>
+<p>主库发生故障后从库会上位，<strong>其他从库指向新的主库</strong>，所以需要一个健康检测的机制来判断主库是否宕机</p>
+<ul>
+<li>select 1 判断，但是高并发下检测不出线程的锁等待的阻塞问题</li>
+<li>查表判断，在系统库（mysql 库）里创建一个表，比如命名为 health_check，里面只放一行数据，然后定期执行。但是当 binlog 所在磁盘的空间占用率达到 100%，所有的更新和事务提交语句都被阻塞，查询语句可以继续运行</li>
+<li>更新判断，在健康检测表中放一个 timestamp 字段，用来表示最后一次执行检测的时间</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> mysql.health_check <span class="keyword">SET</span> t_modified<span class="operator">=</span>now();</span><br></pre></td></tr></table></figure>
+<p>节点可用性的检测都应该包含主库和备库，为了让主备之间的更新不产生冲突，可以在 mysql.health_check 表上存入多行数据，并用主备的 server_id 做主键，保证主、备库各自的检测命令不会发生冲突。</p>
+<h4 id="基于位点"><a class="markdownIt-Anchor" href="#基于位点"></a> 基于位点</h4>
+<p>主库上位后，从库 B 执行 CHANGE MASTER TO 命令，指定 MASTER_LOG_FILE、MASTER_LOG_POS 表示从新主库 A 的哪个文件的哪个位点开始同步，这个位置就是<strong>同步位点</strong>，对应主库的文件名和日志偏移量。<br />
+寻找位点需要找一个稍微往前的，然后再通过判断跳过那些在从库 B 上已经执行过的事务，获取位点方法：</p>
+<ul>
+<li>等待新主库 A 把中转日志（relay log）全部同步完成</li>
+<li>在 A 上执行 show master status 命令，得到当前 A 上最新的 File 和 Position</li>
+<li>取原主库故障的时刻 T，用 mysqlbinlog 工具解析新主库 A 的 File，得到 T 时刻的位点</li>
+</ul>
+<p>通常情况下该值并不准确，在切换的过程中会发生错误，所以要先主动跳过这些错误：</p>
+<ul>
+<li>切换过程中，可能会重复执行一个事务，所以需要主动跳过所有重复的事务</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> <span class="keyword">GLOBAL</span> sql_slave_skip_counter<span class="operator">=</span><span class="number">1</span>;</span><br><span class="line"><span class="keyword">START</span> SLAVE;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>设置 slave_skip_errors 参数，直接设置跳过指定的错误，保证主从切换的正常进行
+<ul>
+<li>1062 错误是插入数据时唯一键冲突</li>
+<li>1032 错误是删除数据时找不到行</li>
+</ul>
+</li>
+<li>该方法针对的是主备切换时，由于找不到精确的同步位点，只能采用这种方法来创建从库和新主库的主备关系。等到主备间的同步关系建立完成并稳定执行一段时间后，还需要把这个参数设置为空，以免真的出现了主从数据不一致也跳过了</li>
+</ul>
+<h4 id="基于gtid"><a class="markdownIt-Anchor" href="#基于gtid"></a> 基于GTID</h4>
+<h5 id="gtid"><a class="markdownIt-Anchor" href="#gtid"></a> GTID</h5>
+<p>GTID 的全称是 Global Transaction Identifier，全局事务 ID，是一个事务<strong>在提交时生成</strong>的，是这个事务的唯一标识，组成：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GTID<span class="operator">=</span>source_id:transaction_id</span><br></pre></td></tr></table></figure>
+<ul>
+<li>source_id：是一个实例第一次启动时自动生成的，是一个全局唯一的值</li>
+<li>transaction_id：初始值是 1，每次提交事务的时候分配给这个事务，并加 1，是连续的（区分事务 ID，事务 ID 是在执行时生成）</li>
+</ul>
+<p>启动 MySQL 实例时，加上参数 <code>gtid_mode=on</code> 和 <code>enforce_gtid_consistency=on</code> 就可以启动 GTID 模式，每个事务都会和一个 GTID 一一对应，每个 MySQL 实例都维护了一个 GTID 集合，用来存储当前实例<strong>执行过的所有事务。</strong><br />
+GTID 有两种生成方式，使用哪种方式取决于 session 变量 gtid_next：</p>
+<ul>
+<li><code>gtid_next=automatic</code>：使用默认值，把 source_id:transaction_id （递增）分配给这个事务，然后加入本实例的 GTID 集合@@SESSION.GTID_NEXT = ‘source_id:transaction_id’;</li>
+<li><code>gtid_next=GTID</code>：指定的 GTID 的值，如果该值已经存在于实例的 GTID 集合中，接下来执行的事务会直接被系统忽略；反之就将该值分配给接下来要执行的事务，系统不需要给这个事务生成新的 GTID，也不用加 1注意：一个 GTID 只能给一个事务使用，所以执行下一个事务，要把 gtid_next 设置成另外一个 GTID 或者 automatic</li>
+</ul>
+<p>业务场景：</p>
+<ul>
+<li>主库 X 和从库 Y 执行一条相同的指令后进行事务同步</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> t <span class="keyword">VALUES</span>(<span class="number">1</span>,<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>当 Y 同步 X 时，会出现主键冲突，导致实例 X 的同步线程停止，解决方法：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> gtid_next<span class="operator">=</span><span class="string">&#x27;(这里是主库 X 的 GTID 值)&#x27;</span>;</span><br><span class="line"><span class="keyword">BEGIN</span>;</span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br><span class="line"><span class="keyword">SET</span> gtid_next<span class="operator">=</span>automatic;</span><br><span class="line"><span class="keyword">START</span> SLAVE;</span><br></pre></td></tr></table></figure>
+<p>前三条语句通过<strong>提交一个空事务</strong>，把 X 的 GTID 加到实例 Y 的 GTID 集合中，实例 Y 就会直接跳过这个事务。</p>
+<h5 id="切换"><a class="markdownIt-Anchor" href="#切换"></a> 切换</h5>
+<p>在 GTID 模式下，CHANGE MASTER TO 不需要指定日志名和日志偏移量，指定 <code>master_auto_position=1 </code>代表使用 GTID 模式<br />
+新主库实例 A 的 GTID 集合记为 set_a，从库实例 B 的 GTID 集合记为 set_b，主备切换逻辑：</p>
+<ul>
+<li>实例 B 指定主库 A，基于主备协议建立连接，实例 B 并把 set_b 发给主库 A</li>
+<li>实例 A 算出 set_a 与 set_b 的差集，就是所有存在于 set_a 但不存在于 set_b 的 GTID 的集合，判断 A 本地是否包含了这个<strong>差集</strong>需要的所有 binlog 事务
+<ul>
+<li>如果不包含，表示 A 已经把实例 B 需要的 binlog 给删掉了，直接返回错误</li>
+<li>如果确认全部包含，A 从自己的 binlog 文件里面，找出第一个不在 set_b 的事务，发给 B</li>
+</ul>
+</li>
+<li>实例 A 之后就从这个事务开始，往后读文件，按顺序取 binlog 发给 B 去执行</li>
+</ul>
+<h2 id="分库分表"><a class="markdownIt-Anchor" href="#分库分表"></a> 分库分表</h2>
+<h3 id="基本介绍-2"><a class="markdownIt-Anchor" href="#基本介绍-2"></a> 基本介绍</h3>
+<p>随着应用系统的数据量也是成指数式增长，若采用单数据库进行数据存储，存在以下性能瓶颈：</p>
+<ol>
+<li>IO瓶颈：热点数据太多，数据库缓存不足，产生大量磁盘IO，效率较低。 请求数据太多，带宽不够，网络IO瓶颈</li>
+<li>CPU瓶颈：排序、分组、连接查询、聚合统计等SQL会耗费大量的CPU资源，请求数太多，CPU出现瓶颈</li>
+</ol>
+<p>为了解决上述问题，我们需要对数据库进行分库分表处理。<br />
+分库分表的中心思想都是将数据分散存储，使得单一数据库/表的数据量变小来缓解单一数据库的性能问题，从而达到提升数据库性能的目的。</p>
+<h3 id="拆分策略"><a class="markdownIt-Anchor" href="#拆分策略"></a> 拆分策略</h3>
+<p>分库分表的形式，主要是两种：垂直拆分和水平拆分。而拆分的粒度，一般又分为分库和分表，所以组成的拆分策略最终如下：</p>
+<ul>
+<li>垂直拆分
+<ul>
+<li>垂直分库：以表为依据，根据业务将不同表拆分到不同库中
+<ul>
+<li>特点：
+<ul>
+<li>每个库的表结构都不一样</li>
+<li>每个库的数据也不一样</li>
+<li>所有库的并集是全量数据</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>垂直分表：以字段为依据，根据字段属性将不同字段拆分到不同表中
+<ul>
+<li>特点：
+<ul>
+<li>每个表的结构都不一样</li>
+<li>每个表的数据也不一样，一般通过一列（主键/外键）关联</li>
+<li>所有表的并集是全量数据</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>水平拆分
+<ul>
+<li>水平分库：以字段为依据，按照一定策略，将一个库的数据拆分到多个库中
+<ul>
+<li>特点：
+<ul>
+<li>每个库的表结构都一样</li>
+<li>每个库的数据都不一样</li>
+<li>所有库的并集是全量数据</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>水平分表：以字段为依据，按照一定策略，将一个表的数据拆分到多个表中
+<ul>
+<li>特点：
+<ul>
+<li>每个表的表结构都一样</li>
+<li>每个表的数据都不一样</li>
+<li>所有表的并集是全量数据</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>在业务系统中，为了缓解磁盘IO及CPU的性能瓶颈，到底是垂直拆分，还是水平拆分；具体是分库，还是分表，都需要根据具体的业务需求具体分析。</p>
+<h3 id="实现技术"><a class="markdownIt-Anchor" href="#实现技术"></a> 实现技术</h3>
+<ol>
+<li>shardingJDBC：基于AOP原理，在应用程序中对本地执行的SQL进行拦截，解析、改写、路由处理。需要自行编码配置实现，只支持java语言，性能较高。</li>
+<li>MyCat：数据库分库分表中间件，不用调整代码即可实现分库分表，支持多种语言，性能不及前者。</li>
+</ol>
+<h3 id="mycat"><a class="markdownIt-Anchor" href="#mycat"></a> MyCat</h3>
+<h4 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h4>
+<p>Mycat是开源的、活跃的、基于Java语言编写的MySQL数据库中间件。可以像使用mysql一样来使用 mycat，对于开发人员来说根本感觉不到mycat的存在。<br />
+开发人员只需要连接MyCat即可，而具体底层用到几台数据库，每一台数据库服务器里面存储了什么数据，都无需关心。 具体的分库分表的策略，只需要在MyCat中配置即可。</p>
+<blockquote>
+<p>下载地址：<strong><a target="_blank" rel="noopener" href="http://dl.mycat.org.cn/">http://dl.mycat.org.cn/</a></strong></p>
+</blockquote>
+<p>目录介绍：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/5.png" alt="" /></p>
+<ul>
+<li>bin : 存放可执行文件，用于启动停止mycat</li>
+<li>conf：存放mycat的配置文件</li>
+<li>lib：存放mycat的项目依赖包（jar）</li>
+<li>logs：存放mycat的日志文件</li>
+</ul>
+<p>在MyCat的整体结构中，分为两个部分：上面的逻辑结构、下面的物理结构。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/6.png" alt="" /></p>
+<p>在MyCat的逻辑结构主要负责逻辑库、逻辑表、分片规则、分片节点等逻辑结构的处理，而具体的数据存储还是在物理结构，也就是数据库服务器中存储的。后文有所解释。</p>
+<h4 id="配置"><a class="markdownIt-Anchor" href="#配置"></a> 配置</h4>
+<h5 id="schemaxml"><a class="markdownIt-Anchor" href="#schemaxml"></a> schema.xml</h5>
+<p>schema.xml 作为MyCat中最重要的配置文件之一 , 涵盖了MyCat的逻辑库、逻辑表、分片规 则、分片节点及数据源的配置。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/7.png" alt="" /></p>
+<p>主要包含以下三组标签：</p>
+<ul>
+<li>schema标签</li>
+<li>datanode标签</li>
+<li>datahost标签</li>
+</ul>
+<h6 id="schema标签"><a class="markdownIt-Anchor" href="#schema标签"></a> schema标签</h6>
+<ol>
+<li>schema 定义逻辑库</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/8.png" alt="" /><br />
+schema 标签用于定义 MyCat实例中的逻辑库 , 一个MyCat实例中, 可以有多个逻辑库 , 可以通过 schema 标签来划分不同的逻辑库。MyCat 中的逻辑库的概念，等同于 MySQL 中的 database 概念, 需要操作某个逻辑库下的表时, 也需要切换逻辑库(use xxx)。</p>
+<p>核心属性：</p>
+<ul>
+<li><strong>name</strong>：指定自定义的逻辑库库名</li>
+<li><strong>checkSQLschema</strong>：在SQL语句操作时指定了数据库名称，执行时是否自动去除；true：自动去除，false：不自动去除</li>
+<li><strong>sqlMaxLimit</strong>：如果未指定limit进行查询，列表查询模式查询多少条记录</li>
+</ul>
+<ol>
+<li>schema 中的table定义逻辑表<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/9.png" alt="" /></li>
+</ol>
+<p>table 标签定义了MyCat中逻辑库schema下的逻辑表 , 所有需要拆分的表都需要在table标签中定 义 。</p>
+<p>核心属性：</p>
+<ul>
+<li><strong>name</strong>：定义逻辑表表名，在该逻辑库下唯一</li>
+<li><strong>dataNode</strong>：定义逻辑表所属的dataNode，该属性需要与dataNode标签中name对应；多个 dataNode逗号分隔</li>
+<li><strong>rule</strong>：分片规则的名字，分片规则名字是在rule.xml中定义的</li>
+<li><strong>primaryKey</strong>：逻辑表对应真实表的主键</li>
+<li><strong>type</strong>：逻辑表的类型，目前逻辑表只有全局表和普通表，如果未配置，就是普通表；全局表，配置为 global</li>
+</ul>
+<h6 id="datanode-标签"><a class="markdownIt-Anchor" href="#datanode-标签"></a> datanode 标签</h6>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/10.png" alt="" /></p>
+<p>核心属性：</p>
+<ul>
+<li>name：定义数据节点名称</li>
+<li>dataHost：数据库实例主机名称，引用自 dataHost 标签中name属性</li>
+<li>database：定义分片所属数据库</li>
+</ul>
+<h6 id="datahost标签"><a class="markdownIt-Anchor" href="#datahost标签"></a> datahost标签</h6>
+<p>该标签在MyCat逻辑库中作为底层标签存在, 直接定义了具体的数据库实例、读写分离、心跳语句。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/11.png" alt="" /></p>
+<p>核心属性：</p>
+<ul>
+<li><strong>name</strong>：唯一标识，供上层标签使用</li>
+<li><strong>maxCon</strong>/<strong>minCon</strong>：最大连接数/最小连接数</li>
+<li><strong>balance</strong>：负载均衡策略，取值 0,1,2,3</li>
+<li><strong>writeType</strong>：写操作分发方式（0：写操作转发到第一个writeHost，第一个挂了，切换到第二 个；1：写操作随机分发到配置的writeHost）</li>
+<li><strong>dbDriver</strong>：数据库驱动，支持 native、jdbc</li>
+</ul>
+<h5 id="rulexml"><a class="markdownIt-Anchor" href="#rulexml"></a> rule.xml</h5>
+<p>rule.xml 中定义所有拆分表的规则, 在使用过程中可以灵活的使用分片算法, 或者对同一个分片算法使用不同的参数, 它让分片过程可配置化。主要包含两类标签：tableRule、Function。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/12.png" alt="" /></p>
+<h5 id="serverxml"><a class="markdownIt-Anchor" href="#serverxml"></a> server.xml</h5>
+<p>server.xml配置文件包含了MyCat的系统配置信息，主要有两个重要的标签：system、user。</p>
+<h6 id="system标签"><a class="markdownIt-Anchor" href="#system标签"></a> system标签</h6>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/13png" alt="" /></p>
+<p>主要配置MyCat中的系统配置信息，对应的系统配置项及其含义，如下：</p>
+<table>
+<thead>
+<tr>
+<th><strong>属性</strong></th>
+<th><strong>取值</strong></th>
+<th><strong>含义</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>charset</td>
+<td>utf8</td>
+<td>设置Mycat的字符集, 字符集需要与MySQL的字符集保持一致</td>
+</tr>
+<tr>
+<td>nonePasswordLogin</td>
+<td>0,1</td>
+<td>0为需要密码登陆、1为不需要密码登陆 ,默认为0，设置为1则需要指定默认账户</td>
+</tr>
+<tr>
+<td>useHandshakeV10</td>
+<td>0,1</td>
+<td>使用该选项主要的目的是为了能够兼容高版本的jdbc驱动, 是否采用HandshakeV10Packet来与client进行通信, 1:是, 0:否</td>
+</tr>
+<tr>
+<td>useSqlStat</td>
+<td>0,1</td>
+<td>开启SQL实时统计, 1 为开启 , 0 为关闭 ; 开启之后, MyCat会自动统计SQL语句的执行情况 ; mysql -h 127.0.0.1 -P 9066 -u root -p 查看MyCat执行的SQL, 执行效率比较低的SQL , SQL的整体执行情况、读写比例等 ; show @@sql ; show @@sql.slow ; show @@sql.sum ;</td>
+</tr>
+<tr>
+<td>useGlobleTableCheck</td>
+<td>0,1</td>
+<td>是否开启全局表的一致性检测。1为开启 ，0为关闭 。</td>
+</tr>
+<tr>
+<td>sqlExecuteTimeout</td>
+<td>1000</td>
+<td>SQL语句执行的超时时间 , 单位为 s ;</td>
+</tr>
+<tr>
+<td>sequnceHandlerType</td>
+<td>0,1,2</td>
+<td>用来指定Mycat全局序列类型，0 为本地文件，1 为数据库方式，2 为时间戳列方式，默认使用本地文件方式，文件方式主要用于测试</td>
+</tr>
+<tr>
+<td>sequnceHandlerPattern</td>
+<td>正则表达式</td>
+<td>必须带有MYCATSEQ或者 mycatseq进入序列匹配流程 注意MYCATSEQ_有空格的情况</td>
+</tr>
+<tr>
+<td>subqueryRelationshipCheck</td>
+<td>true,false</td>
+<td>子查询中存在关联查询的情况下,检查关联字段中是否有分片字段 .默认 false</td>
+</tr>
+<tr>
+<td>useCompression</td>
+<td>0,1</td>
+<td>开启mysql压缩协议 , 0 : 关闭, 1 : 开启</td>
+</tr>
+<tr>
+<td>fakeMySQLVersion</td>
+<td>5.5,5.6</td>
+<td>设置模拟的MySQL版本号</td>
+</tr>
+<tr>
+<td>defaultSqlParser</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>由于MyCat的最初版本使用了FoundationDB的SQL解析器, 在MyCat1.3后增加了Druid解析器, 所以要设置defaultSqlParser属性来指定默认的解析器; 解析器有两个 : druidparser 和 fdbparser, 在MyCat1.4之后,默认是druidparser, fdbparser已经废除了</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>processors</td>
+<td>1,2…</td>
+<td>指定系统可用的线程数量, 默认值为CPU核心 x 每个核心运行线程数量; processors 会影响processorBufferPool, processorBufferLocalPercent, processorExecutor属性, 所有, 在性能调优时, 可以适当地修改processors值</td>
+</tr>
+<tr>
+<td>processorBufferChunk</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>指定每次分配Socket Direct Buffer默认值为4096字节, 也会影响BufferPool长度, 如果一次性获取字节过多而导致buffer不够用, 则会出现警告, 可以调大该值</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>processorExecutor</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>指定NIOProcessor上共享 businessExecutor固定线程池的大小; MyCat把异步任务交给 businessExecutor线程池中, 在新版本的MyCat中这个连接池使用频次不高, 可以适当地把该值调小</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>packetHeaderSize</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>指定MySQL协议中的报文头长度, 默认4个字节</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>maxPacketSize</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>指定MySQL协议可以携带的数据最大大小, 默认值为16M</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>idleTimeout</td>
+<td>30</td>
+<td>指定连接的空闲时间的超时长度;如果超时,将关闭资源并回收, 默认30分钟</td>
+</tr>
+<tr>
+<td>txIsolation</td>
+<td>1,2,3,4</td>
+<td>初始化前端连接的事务隔离级别,默认为 REPEATED_READ , 对应数字为3 READ_UNCOMMITED=1; READ_COMMITTED=2; REPEATED_READ=3; SERIALIZABLE=4;</td>
+</tr>
+<tr>
+<td>sqlExecuteTimeout</td>
+<td>300</td>
+<td>执行SQL的超时时间, 如果SQL语句执行超时,将关闭连接; 默认300秒;</td>
+</tr>
+<tr>
+<td>serverPort</td>
+<td>8066</td>
+<td>定义MyCat的使用端口, 默认8066</td>
+</tr>
+<tr>
+<td>managerPort</td>
+<td>9066</td>
+<td>定义MyCat的管理端口, 默认9066</td>
+</tr>
+</tbody>
+</table>
+<h6 id="user标签"><a class="markdownIt-Anchor" href="#user标签"></a> user标签</h6>
+<p>配置MyCat中的用户、访问密码，以及用户针对于逻辑库、逻辑表的权限信息，具体的权限描述方式及配置说明如下：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/14.png" alt="" /></p>
+<p>在测试权限操作时，我们只需要将 privileges 标签的注释放开。 在 privileges 下的schema 标签中配置的dml属性配置的是逻辑库的权限。 在privileges的schema下的table标签的dml属性中配置逻辑表的权限。</p>
+<h4 id="全局表"><a class="markdownIt-Anchor" href="#全局表"></a> 全局表</h4>
+<p>全局表（Global Temporary Table）是一种临时表，它是在所有的会话之间都可以访问的临时表。全局表在创建时使用的是CREATE GLOBAL TEMPORARY TABLE语句，而不是普通的CREATE TABLE语句。<br />
+全局表的特点包括：</p>
+<ol>
+<li>可以被所有的会话访问：全局表在创建后，所有的会话都可以访问和操作这个表，而不像普通的临时表一样只能在创建它的会话中访问。</li>
+<li>数据在会话结束时自动删除：和普通的临时表一样，全局表的数据也会在会话结束时自动删除，不会对其他会话产生影响。</li>
+<li>可以共享数据：全局表可以用于在不同的会话之间共享数据，这在某些特定的场景下可能会有用。</li>
+</ol>
+<h4 id="分片规则"><a class="markdownIt-Anchor" href="#分片规则"></a> 分片规则</h4>
+<h5 id="范围分片"><a class="markdownIt-Anchor" href="#范围分片"></a> 范围分片</h5>
+<p>根据数据的范围将数据分散存储到不同的节点中。范围分片能够实现较好的局部性，但可能会导致数据分布不均匀。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/15.png" alt="" /></p>
+<p>配置属性含义：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/16.png" alt="" /></p>
+<h5 id="取模分片"><a class="markdownIt-Anchor" href="#取模分片"></a> 取模分片</h5>
+<p>根据指定的字段值与节点数量进行求模运算，根据运算结果， 来决定该数据属于哪一个分片。该分片规则，主要是针对于<strong>数字类型</strong>的字段适用。 在前面水平拆分的演示中，我们选择的就是取模分片。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/17.png" alt="" /></p>
+<p>属性说明如下：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/18.png" alt="" /></p>
+<h5 id="一致性-hash-分片"><a class="markdownIt-Anchor" href="#一致性-hash-分片"></a> 一致性 hash 分片</h5>
+<p>所谓一致性哈希，相同的哈希因子计算值总是被划分到相同的分区表中，不会因为分区节点的增加而改变原来数据的分区位置，有效的解决了分布式数据的拓容问题。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/19.png" alt="" /></p>
+<p>属性含义：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/20.png" alt="" /></p>
+<h5 id="枚举分片"><a class="markdownIt-Anchor" href="#枚举分片"></a> 枚举分片</h5>
+<p>通过在配置文件中配置可能的枚举值, 指定数据分布到不同数据节点上, 本规则适用于按照省份、性别、状态拆分数据等业务。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/21.png" alt="" /></p>
+<p>分片规则属性含义：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/22.png" alt="" /></p>
+<h5 id="应用指定算法分片"><a class="markdownIt-Anchor" href="#应用指定算法分片"></a> 应用指定算法分片</h5>
+<p>运行阶段由应用自主决定路由到那个分片 , 直接根据字符子串（必须是数字）计算分片号。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/23.png" alt="" /></p>
+<p>分片规则属性含义：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/24.png" alt="" /></p>
+<h5 id="固定分片-hash-算法分片"><a class="markdownIt-Anchor" href="#固定分片-hash-算法分片"></a> 固定分片 hash 算法分片</h5>
+<p>该算法类似于十进制的求模运算，但是为二进制的操作，例如，取 id 的二进制低 10 位 与1111111111 进行位 &amp; 运算，位与运算最小值为 0000000000，最大值为1111111111，转换为十进制，也就是位于0-1023之间。<br />
+特点：</p>
+<ul>
+<li>如果是求模，连续的值，分别分配到各个不同的分片；但是此算法会将连续的值可能分配到相同的分片，降低事务处理的难度。</li>
+<li>可以均匀分配，也可以非均匀分配。</li>
+<li>分片字段必须为数字类型。</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/25.png" alt="" /></p>
+<p>分片规则属性含义：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/26.png" alt="" /></p>
+<p>约束 :</p>
+<ol>
+<li>分片长度 : 默认最大2^10 , 为 1024 ;</li>
+<li>count, length的数组长度必须是一致的 ;</li>
+</ol>
+<p>以上分为三个分区:0-255,256-511,512-1023 。</p>
+<h5 id="字符串-hash-解析分片"><a class="markdownIt-Anchor" href="#字符串-hash-解析分片"></a> <strong>字符串 hash 解析分片</strong></h5>
+<p>截取字符串中的指定位置的子字符串, 进行hash算法， 算出分片。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/27.png" alt="" /></p>
+<p>分片规则属性含义：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/28.png" alt="" /></p>
+<p>示例说明：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/29.png" alt="" /></p>
+<h5 id="按天分片算法"><a class="markdownIt-Anchor" href="#按天分片算法"></a> 按天分片算法</h5>
+<p>按照日期及对应的时间周期来分片。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/30.png" alt="" /></p>
+<p>分片规则属性含义：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/31.png" alt="" /></p>
+<h5 id="自然月分片"><a class="markdownIt-Anchor" href="#自然月分片"></a> 自然月分片</h5>
+<p>使用场景为按照月份来分片, 每个自然月为一个分片。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/32.png" alt="" /></p>
+<p>分片规则属性含义：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/33.png" alt="" /></p>
+<h4 id="管理和监控"><a class="markdownIt-Anchor" href="#管理和监控"></a> 管理和监控</h4>
+<h5 id="mycat原理"><a class="markdownIt-Anchor" href="#mycat原理"></a> MyCat原理</h5>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/34.png" alt="" /></p>
+<p>在MyCat中，当执行一条SQL语句时，MyCat需要进行SQL解析、分片分析、路由分析、读写分离分析等操作，最终经过一系列的分析决定将当前的SQL语句到底路由到那几个(或哪一个)节点数据库，数据库将数据执行完毕后，如果有返回的结果，则将结果返回给MyCat，最终还需要在MyCat中进行结果合并、聚合处理、排序处理、分页处理等操作，最终再将结果返回给客户端。<br />
+而在MyCat的使用过程中，MyCat官方也提供了一个管理监控平台MyCat-Web（MyCat-eye）。Mycat-web 是 Mycat 可视化运维的管理和监控平台，弥补了 Mycat 在监控上的空白。帮 Mycat 分担统计任务和配置管理任务。Mycat-web 引入了 ZooKeeper 作为配置中心，可以管理多个节点。Mycat-web 主要管理和监控 Mycat 的流量、连接、活动线程和内存等，具备 IP 白名单、邮件告警等模块，还可以统计 SQL 并分析慢 SQL 和高频 SQL 等。为优化 SQL 提供依据。</p>
+<h5 id="mycat管理"><a class="markdownIt-Anchor" href="#mycat管理"></a> MyCat管理</h5>
+<p>Mycat默认开通2个端口，可以在server.xml中进行修改。</p>
+<ul>
+<li><strong>8066</strong> 数据访问端口，即进行 DML 和 DDL 操作</li>
+<li><strong>9066</strong> 数据库管理端口，即 mycat 服务管理控制功能，用于管理mycat的整个集群状态</li>
+</ul>
+<p>连接MyCat的管理控制台：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql <span class="operator">-</span>h [主机ip] <span class="operator">-</span>p <span class="number">9066</span> <span class="operator">-</span>uroot <span class="operator">-</span>p[密码] </span><br></pre></td></tr></table></figure>
+<p>操作指令：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--yw/35.png" alt="" /></p>
+<p>除了命令行管理， Mycat-web(Mycat-eye) 也是对mycat-server提供监控服务，功能不局限于对mycat-server使用。他通过JDBC连接对Mycat、Mysql监控，监控远程服务器(目前仅限于linux系统)的cpu、内存、网络、磁盘。<br />
+Mycat-eye运行过程中需要依赖zookeeper，因此需要先安装zookeeper。对此了解即可，这里不过多赘述。</p>
+<h2 id="读写分离"><a class="markdownIt-Anchor" href="#读写分离"></a> 读写分离</h2>
+<h3 id="读写延迟"><a class="markdownIt-Anchor" href="#读写延迟"></a> 读写延迟</h3>
+<p>读写分离：可以降低主库的访问压力，提高系统的并发能力。</p>
+<ul>
+<li>主库不建查询的索引，从库建查询的索引。因为索引需要维护的，比如插入一条数据，不仅要在聚簇索引上面插入，对应的二级索引也得插入</li>
+<li>将读操作分到从库了之后，可以在主库把查询要用的索引删了，减少写操作对主库的影响</li>
+</ul>
+<p>读写分离产生了读写延迟，造成数据的不一致性。假如客户端执行完一个更新事务后马上发起查询，如果查询选择的是从库的话，可能读到的还是以前的数据，叫<strong>过期读。</strong><br />
+解决方案：</p>
+<ul>
+<li>强制将写之后<strong>立刻读的操作转移到主库</strong>，比如刚注册的用户，直接登录从库查询可能查询不到，先走主库登录</li>
+<li><strong>二次查询</strong>，如果从库查不到数据，则再去主库查一遍，由 API 封装，比较简单，但导致主库压力大</li>
+<li>更新主库后，读从库之前先 sleep 一下，类似于执行一条 select sleep(1) 命令，大多数情况下主备延迟在 1 秒之内</li>
+</ul>
+<h3 id="确保机制"><a class="markdownIt-Anchor" href="#确保机制"></a> 确保机制</h3>
+<h4 id="无延迟"><a class="markdownIt-Anchor" href="#无延迟"></a> 无延迟</h4>
+<p>确保主备无延迟的方法：</p>
+<ul>
+<li>每次从库执行查询请求前，先判断 seconds_behind_master 是否已经等于 0，如果不等于那就等到参数变为 0 执行查询请求</li>
+<li>对比位点，Master_Log_File 和 Read_Master_Log_Pos 表示的是读到的主库的最新位点，Relay_Master_Log_File 和 Exec_Master_Log_Pos 表示的是备库执行的最新位点，这两组值完全相同就说明接收到的日志已经同步完成</li>
+<li>对比 GTID 集合，Retrieved_Gtid_Set 是备库收到的所有日志的 GTID 集合，Executed_Gtid_Set 是备库所有已经执行完成的 GTID 集合，如果这两个集合相同也表示备库接收到的日志都已经同步完成</li>
+</ul>
+<h4 id="半同步"><a class="markdownIt-Anchor" href="#半同步"></a> 半同步</h4>
+<p>半同步复制就是 semi-sync replication，适用于一主一备的场景，工作流程：</p>
+<ul>
+<li>事务提交的时候，主库把 binlog 发给从库</li>
+<li>从库收到 binlog 以后，发回给主库一个 ack，表示收到了</li>
+<li>主库收到这个 ack 以后，才能给客户端返回事务完成的确认</li>
+</ul>
+<p>在一主多从场景中，主库只要等到一个从库的 ack，就开始给客户端返回确认，这时在从库上执行查询请求，有两种情况：</p>
+<ul>
+<li>如果查询是落在这个响应了 ack 的从库上，是能够确保读到最新数据</li>
+<li>如果查询落到其他从库上，它们可能还没有收到最新的日志，就会产生过期读的问题</li>
+</ul>
+<p>在业务更新的高峰期，主库的位点或者 GTID 集合更新很快，导致从库来不及处理，那么两个位点等值判断就会一直不成立，很可能出现从库上迟迟无法响应查询请求的情况。</p>
+<h4 id="等位点"><a class="markdownIt-Anchor" href="#等位点"></a> 等位点</h4>
+<p>在<strong>从库执行判断位点</strong>的命令，参数 file 和 pos 指的是主库上的文件名和位置，timeout 可选，设置为正整数 N 表示最多等待 N 秒。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> master_pos_wait(file, pos[, timeout]);</span><br></pre></td></tr></table></figure>
+<p>命令正常返回的结果是一个正整数 M，表示从命令开始执行，到应用完 file 和 pos 表示的 binlog 位置，执行了多少事务。</p>
+<ul>
+<li>如果执行期间，备库同步线程发生异常，则返回 NULL</li>
+<li>如果等待超过 N 秒，就返回 -1</li>
+<li>如果刚开始执行的时候，就发现已经执行过这个位置了，则返回 0</li>
+</ul>
+<p>工作流程：先执行 trx1，再执行一个查询请求的逻辑，要<strong>保证能够查到正确的数据。</strong></p>
+<ul>
+<li>trx1 事务更新完成后，马上执行 show master status 得到当前主库执行到的 File 和 Position</li>
+<li>选定一个从库执行判断位点语句，如果返回值是 &gt;=0 的正整数，说明从库已经同步完事务，可以在这个从库执行查询语句</li>
+<li>如果出现其他情况，需要到主库执行查询语句</li>
+</ul>
+<p>注意：如果所有的从库都延迟超过 timeout 秒，查询压力就都跑到主库上，所以需要进行权衡。</p>
+<h4 id="等gtid"><a class="markdownIt-Anchor" href="#等gtid"></a> 等GTID</h4>
+<p>数据库开启了 GTID 模式，MySQL 提供了判断 GTID 的命令</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> wait_for_executed_gtid_set(gtid_set [timeout])</span><br></pre></td></tr></table></figure>
+<ul>
+<li>等待直到这个库执行的事务中包含传入的 gtid_set，返回 0</li>
+<li>超时返回 1</li>
+</ul>
+<p>工作流程：先执行 trx1，再执行一个查询请求的逻辑，要保证能够查到正确的数据</p>
+<ul>
+<li>trx1 事务更新完成后，从返回包直接获取这个事务的 GTID，记为 gtid</li>
+<li>选定一个从库执行查询语句，如果返回值是 0，则在这个从库执行查询语句，否则到主库执行查询语句</li>
+</ul>
+<p>对比等待位点方法，减少了一次 <code>show master status</code> 的方法，将参数 session_track_gtids 设置为 OWN_GTID，然后通过 API 接口 mysql_session_track_get_first 从返回包解析出 GTID 的值即可<br />
+总结：所有的等待无延迟的方法，都需要根据具体的业务场景去判断实施</p>
+<h3 id="负载均衡"><a class="markdownIt-Anchor" href="#负载均衡"></a> 负载均衡</h3>
+<p>负载均衡是应用中使用非常普遍的一种优化方法，机制就是利用某种均衡算法，将固定的负载量分布到不同的服务器上，以此来降低单台服务器的负载，达到优化的效果</p>
+<ul>
+<li>
+<p>分流查询：通过 MySQL 的主从复制，实现读写分离，使增删改操作走主节点，查询操作走从节点，从而可以降低单台服务器的读写压力<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/1ea77430f196c9d5ee2b8b5ebae4b13961a83c202d0f53522a405e5740003cd5/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545382542342539462545382542442542442545352539442538372545382541312541312545342542382542422545342542422538452545352541342538442545352538382542362e6a7067"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/1ea77430f196c9d5ee2b8b5ebae4b13961a83c202d0f53522a405e5740003cd5/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545382542342539462545382542442542442545352539442538372545382541312541312545342542382542422545342542422538452545352541342538442545352538382542362e6a7067#from=url&amp;id=ZKbYR&amp;originHeight=423&amp;originWidth=584&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+</li>
+<li>
+<p>分布式数据库架构：适合大数据量、负载高的情况，具有良好的拓展性和高可用性。通过在多台服务器之间分布数据，可以实现在多台服务器之间的负载均衡，提高访问效率</p>
+</li>
+</ul>
+<h2 id="建表范式"><a class="markdownIt-Anchor" href="#建表范式"></a> 建表范式</h2>
+<h3 id="第一范式"><a class="markdownIt-Anchor" href="#第一范式"></a> 第一范式</h3>
+<p>建立科学的，<strong>规范的数据表</strong>就需要满足一些规则来优化数据的设计和存储，这些规则就称为范式。<br />
+<strong>1NF</strong>：数据库表的每一列都是不可分割的原子数据项，不能是集合、数组等非原子数据项。即表中的某个列有多个值时，必须拆分为不同的列。简而言之，<strong>第一范式每一列不可再拆分，称为原子性。</strong><br />
+基本表：</p>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/a086b418baf273dfd2ff6a2c85a764bc1518ae6b0cb0c7cde001b629400fd003/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545362539392541452545392538302539412545382541312541382e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/a086b418baf273dfd2ff6a2c85a764bc1518ae6b0cb0c7cde001b629400fd003/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545362539392541452545392538302539412545382541312541382e706e67#from=url&amp;id=fxGAa&amp;originHeight=355&amp;originWidth=655&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<p>第一范式表：<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/9ba80610392ed279ca57e4133b89c42bd65a739e4f2361ecb52bdbf81dfa6139/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545372541432541432545342542382538302545382538432538332545352542432538462e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/9ba80610392ed279ca57e4133b89c42bd65a739e4f2361ecb52bdbf81dfa6139/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545372541432541432545342542382538302545382538432538332545352542432538462e706e67#from=url&amp;id=bbHX3&amp;originHeight=459&amp;originWidth=823&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h3 id="第二范式"><a class="markdownIt-Anchor" href="#第二范式"></a> 第二范式</h3>
+<p><strong>2NF</strong>：在满足第一范式的基础上，非主属性完全依赖于主码（主关键字、主键），消除非主属性对主码的部分函数依赖。简而言之，<strong>表中的每一个字段 （所有列）都完全依赖于主键，记录的唯一性。</strong><br />
+作用：遵守第二范式减少数据冗余，通过主键区分相同数据。</p>
+<ol>
+<li>函数依赖：A → B，如果通过 A 属性(属性组)的值，可以确定唯一 B 属性的值，则称 B 依赖于 A
+<ul>
+<li>学号 → 姓名；(学号，课程名称) → 分数</li>
+</ul>
+</li>
+<li>完全函数依赖：A → B，如果A是一个属性组，则 B 属性值的确定需要依赖于 A 属性组的所有属性值
+<ul>
+<li>(学号，课程名称) → 分数</li>
+</ul>
+</li>
+<li>部分函数依赖：A → B，如果 A 是一个属性组，则 B 属性值的确定只需要依赖于 A 属性组的某些属性值
+<ul>
+<li>(学号，课程名称) → 姓名</li>
+</ul>
+</li>
+<li>传递函数依赖：A → B，B → C，如果通过A属性(属性组)的值，可以确定唯一 B 属性的值，在通过 B 属性(属性组)的值，可以确定唯一 C 属性的值，则称 C 传递函数依赖于 A
+<ul>
+<li>学号 → 系名，系名 → 系主任</li>
+</ul>
+</li>
+<li>码：如果在一张表中，一个属性或属性组，被其他所有属性所完全依赖，则称这个属性(属性组)为该表的码
+<ul>
+<li>该表中的码：(学号，课程名称)</li>
+<li>主属性：码属性组中的所有属性</li>
+<li>非主属性：除码属性组以外的属性</li>
+</ul>
+</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/26657b569f64d11f9d50ecba62dd0023ca46f52c762a145548953fbbe17c29e3/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545372541432541432545342542412538432545382538432538332545352542432538462e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/26657b569f64d11f9d50ecba62dd0023ca46f52c762a145548953fbbe17c29e3/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545372541432541432545342542412538432545382538432538332545352542432538462e706e67#from=url&amp;id=AsnLU&amp;originHeight=365&amp;originWidth=1054&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h3 id="第三范式"><a class="markdownIt-Anchor" href="#第三范式"></a> 第三范式</h3>
+<p><strong>3NF：</strong> 在满足第二范式的基础上，表中的任何属性不依赖于其它非主属性，消除传递依赖。简而言之，<strong>非主键都直接依赖于主键，而不是通过其它的键来间接依赖于主键</strong>。<br />
+作用：可以通过主键 id 区分相同数据，修改数据的时候只需要修改一张表（方便修改），反之需要修改多表。<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/f222051d7194d42c6686eca17292bc50532abdaa17f18493229cb56726b2fe05/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545372541432541432545342542382538392545382538432538332545352542432538462e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/f222051d7194d42c6686eca17292bc50532abdaa17f18493229cb56726b2fe05/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545372541432541432545342542382538392545382538432538332545352542432538462e706e67#from=url&amp;id=HTpu0&amp;originHeight=389&amp;originWidth=784&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h3 id="总结"><a class="markdownIt-Anchor" href="#总结"></a> 总结</h3>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/9f4ebc3df5ec9aef7c23f463fbc47b7e525e00978e833d20db8633a1739ebd0c/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545342542382538392545352541342541372545382538432538332545352542432538462e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/9f4ebc3df5ec9aef7c23f463fbc47b7e525e00978e833d20db8633a1739ebd0c/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f2545342542382538392545352541342541372545382538432538332545352542432538462e706e67#from=url&amp;id=bCypE&amp;originHeight=132&amp;originWidth=886&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://strivingto.top/2024/01/31/MySQL--%E8%BF%90%E7%BB%B4/" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://strivingto.top/2024/01/31/MySQL--%E8%BF%90%E7%BB%B4/"/>
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2024/01/29/MySQL--Innodb%20%E5%BC%95%E6%93%8E/">MySQL--Innodb引擎</a></div></section></div>
+
+  <script>
+    let tianliGPT_postSelector = 'article.content';
+    let tianliGPT_key = '9ba935841efd4f2ee0fd';
+    let tianliGPT_typingAnimate = 'true';
+    let tianliGPT_wordLimit = 100;
+  </script>
+<script defer src="https://cdn1.tianli0.top/gh/zhheo/Post-Abstract-AI@0.15.2/tianli_gpt.min.js"></script>
+
+
+<div class="related-wrap" id="related-posts">
+    <section class='header'>
+      <div class='title cap theme'>您可能感兴趣的文章</div>
+    </section>
+    <section class='body'>
+    <div class="related-posts"><a class="item" href="\2024\01\29\MySQL--Innodb 引擎\" title="MySQL--Innodb引擎"><span class="title">MySQL--Innodb引擎</span></a><a class="item" href="\2023\05\21\MySQL--存储引擎\" title="MySQL--存储引擎"><span class="title">MySQL--存储引擎</span></a><a class="item" href="\2024\01\27\MySQL--SQL 优化\" title="MySQL--SQL优化"><span class="title">MySQL--SQL优化</span></a><a class="item" href="\2023\05\15\MySQL--单表操作\" title="MySQL--单表操作"><span class="title">MySQL--单表操作</span></a><a class="item" href="\2023\05\11\MySQL--入门\" title="MySQL--入门"><span class="title">MySQL--入门</span></a></div></section></div>
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="sitemap"><div class="sitemap-group"><span class="fs15">博客</span><a href="/">首页</a><a href="/categories/">分类</a><a href="/tags/">标签</a><a href="/archives/">归档</a></div><div class="sitemap-group"><span class="fs15">项目</span><a href="/">暂无</a></div><div class="sitemap-group"><span class="fs15">社交</span><a href="/friends/">友链</a></div><div class="sitemap-group"><span class="fs15">更多</span><a href="/about/">关于本站</a><a target="_blank" rel="noopener" href="https://github.com/GIMME-JIA">GitHub</a></div></div><div class="text"><center>
+  本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">[CC BY-NC-SA 4.0]</a> 许可协议，转载请注明出处。<br/>
+  <!--不蒜子计数器-->
+  <script defer src="https://busuanzi.9420.ltd/js"></script>
+  <!--添加一个访问量-->
+<p>本页总阅读 <span id="busuanzi_page_pv"></span> 次       页总访客 <span id="busuanzi_page_uv"></span> 人<br />
+本站总访问 <span id="busuanzi_site_pv"></span> 次       本站总访客 <span id="busuanzi_site_uv"></span> 人</p>
+</center>
+</div></footer>
+<div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+<div class="main-mask" onclick="sidebar.toggle()"></div></div></div><div class="scripts">
+<script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.26.8';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.26.8';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js","marked":"/js/plugins/marked.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://cdn.bootcdn.net/ajax/libs/vanilla-lazyload/17.8.4/lazyload.min.js","transition":"fade"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://cdn.bootcdn.net/ajax/libs/scrollReveal.js/4.0.9/scrollreveal.min.js","distance":"16px","duration":800,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","flying_pages":"https://cdn.bootcdn.net/ajax/libs/flying-pages/2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.umd.min.js","css":"https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.min.css","selector":null});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied","toast":"复制成功"});
+  }
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.26.8" async></script>
+
+<!-- optional -->
+
+
+
+
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@v9/dist/mermaid.min.js"></script>
+<script>
+  var mermaid_config = {
+    startOnLoad: true,
+    theme:
+      "auto" == "auto" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "neutral",
+    logLevel: 3,
+    themeVariables: {
+      darkMode: true
+    },
+    flowchart: {
+      useMaxWidth: false,
+      htmlLabels: true,
+      curve: "linear"
+    },
+    gantt: {
+      axisFormat: "%Y/%m/%d"
+    },
+    sequence: {
+      actorMargin: 50
+    }
+  }
+  if (window.mermaid) {
+    mermaid.initialize(mermaid_config);
+  }
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

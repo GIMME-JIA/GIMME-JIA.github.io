@@ -1,0 +1,1047 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.26.8" theme-name="Stellar" theme-version="1.26.8">
+  
+  <meta name="generator" content="Hexo 6.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>MySQL--SQL优化 - 小破站</title>
+
+  
+    <meta name="description" content="SQL 性能分析  SQL 执行频率 MySQL 客户端连接成功后，查询服务器状态信息： 123SHOW [SESSION|GLOBAL] STATUS LIKE &amp;#x27;&amp;#x27;;-- SESSION: 显示当前会话连接的统计结果，默认参数-- GLOBAL: 显示自数据库上次启动至今的统计结果  查看 SQL 执行频率：  1SHOW STATUS LIKE &amp;#x27;Com___">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL--SQL优化">
+<meta property="og:url" content="https://strivingto.top/2024/01/27/MySQL--SQL%20%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:site_name" content="小破站">
+<meta property="og:description" content="SQL 性能分析  SQL 执行频率 MySQL 客户端连接成功后，查询服务器状态信息： 123SHOW [SESSION|GLOBAL] STATUS LIKE &amp;#x27;&amp;#x27;;-- SESSION: 显示当前会话连接的统计结果，默认参数-- GLOBAL: 显示自数据库上次启动至今的统计结果  查看 SQL 执行频率：  1SHOW STATUS LIKE &amp;#x27;Com___">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://camo.githubusercontent.com/30d4dd4db0398e619b947ec55701a35e976cc4cddb3f485f11859c7c07fa2181/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545382541462541442545352538462541352545362538392541372545382541312538432545392541322539312545372538452538372e706e67#from=url&amp;id=nbDMC&amp;originHeight=292&amp;originWidth=1047&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/038643518149f17e042be2650f07957f6f7af921df324479414a4eaa5d374d4e/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545382541462541442545352538462541352545352542442542312545352539332538442545372539412538342545382541312538432545362539352542302e706e67#from=url&amp;id=CZGiN&amp;originHeight=189&amp;originWidth=1068&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/61210e0cc91f7236d7186a4a6dec5a0b56ceaf1371bef7c11537782cbd5bf2dd/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53484f575f50524f434553534c4953542545352539312542442545342542422541342e706e67#from=url&amp;id=fhjiz&amp;originHeight=167&amp;originWidth=1050&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/ae5c812c670d92e1ac45451c29c00987099e8afbad420723e91e945e5e217c51/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d6578706c61696e25453625394625413525453825414625413253514c2545382541462541442545352538462541352545372539412538342545362538392541372545382541312538432545382541452541312545352538382539322e706e67#from=url&amp;id=yyhi6&amp;originHeight=130&amp;originWidth=1047&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/1c78cfa981c1630a7aad099ea4da0aff6e0a0ce77b163c3d9a01563fcc707f8b/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545362538392541372545382541312538432545382541452541312545352538382539322545372538452541462545352541322538332545352538372538362545352541342538372e706e67#from=url&amp;id=HcMUX&amp;originHeight=270&amp;originWidth=949&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/a7c99752fd4c0d634168d8bfa4d418a8e2004ade254d8cd182ec62c2236f5870/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d6578706c61696e25453425423925384269642545372539422542382545352539302538432e706e67#from=url&amp;id=zyUKP&amp;originHeight=160&amp;originWidth=1323&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/93b91a216717843727ad74c5c0bac8eb9fa9b5523b697748f71dc40cb8b13ace/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d6578706c61696e25453425423925384269642545342542382538442545352539302538432e706e67#from=url&amp;id=K7upG&amp;originHeight=181&amp;originWidth=1335&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/0614b591de9f9a52d5afa6e991bc8ca015c530294e9cb06507f6af1fbccb45b5/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d6578706c61696e25453425423925384269642545372539422542382545352539302538432545352539322538432545342542382538442545352539302538432e706e67#from=url&amp;id=ZhtCF&amp;originHeight=169&amp;originWidth=1284&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/875816bdbb926c9788373cdf7c816df2d871e20bca0794e7c81b8aceec6976e6/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d686176655f70726f66696c696e672e706e67#from=url&amp;id=rv2LH&amp;originHeight=135&amp;originWidth=1059&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/c768c08af1abd51fd854b2066b27542646d74e83f64849f2286ec697e8ad58b6/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d70726f66696c696e672e706e67#from=url&amp;id=AhDpT&amp;originHeight=131&amp;originWidth=1055&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/2a028a4f922c393ebb2dc0ba385d38af00f5bad22488bd8eafe1bc3614ae78b9/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453625394625413525453725394325384253514c2545382541462541442545352538462541352545362538392541372545382541312538432545382538302539372545362539372542362e706e67#from=url&amp;id=nUnuk&amp;originHeight=221&amp;originWidth=1059&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/2cb46adff1a244fd65620587cb0396c94b322fd8e95eb95046d7740ea6d86d57/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545362538392541372545382541312538432545362541462538462545342542382541412545372538412542362545362538302538312545362542362538382545382538302539372545372539412538342545362539372542362545392539372542342e706e67#from=url&amp;id=s5ORs&amp;originHeight=385&amp;originWidth=1056&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/ccd775e3844be19a98ea32c08c04bd40b12f9c082a06d802a98daf097917854d/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545362538392541372545382541312538432545362541462538462545342542382541412545372538412542362545362538302538312545362542362538382545382538302539372545372539412538344350552e706e67#from=url&amp;id=gVqxi&amp;originHeight=379&amp;originWidth=1057&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/8d019781cb8dce16b6d417b2d28d69ce6e3cbed7f4bab90a50c0eaa739564e34/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c2545362538462539322545352538352541352545362539352542302545362538442541452545352538352542332545392539372541442545352539342541462545342542382538302545362538302541372545362541302541312545392541412538432e706e67#from=url&amp;id=gn9aC&amp;originHeight=236&amp;originWidth=1181&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/f28b7147234c668847037bad32c1aa3044f389466cfb02a9f2cdfa8978c7d749/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c2545362538462539322545352538352541352545362539352542302545362538442541452545362538392538422545352538412541382545362538462539302545342542412541342545342542412538422545352538412541312e706e67#from=url&amp;id=ZPgel&amp;originHeight=318&amp;originWidth=1186&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/1.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/2.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/3.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/4.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/5.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/6.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/7.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/8.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/9.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/10.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/11.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/12.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/13.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/14.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/15.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/16.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/17.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/18.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/19.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/20.png">
+<meta property="og:image" content="https://camo.githubusercontent.com/83abe98dc8ef3a9227f3f4bd1d6d8e811652e50808b70a944de382813e316b66/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de8aea1e695b0636f756e74e4bc98e58c962e706e67#from=url&amp;id=QOjSQ&amp;originHeight=577&amp;originWidth=1075&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/21.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--sqlyh/22.png">
+<meta property="og:image" content="https://camo.githubusercontent.com/ad82b1286e621fe6c72994030c0eb43903c341d38e532a536f93809a6a9f9ec6/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254535254235253843254535254135253937254536253946254135254538254146254132312e706e67#from=url&amp;id=XTSNt&amp;originHeight=144&amp;originWidth=1187&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="og:image" content="https://camo.githubusercontent.com/c347fb1c54187057fbc21d40faeaaa831db4f325850a7c0fc9c14cd394d08833/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254535254235253843254535254135253937254536253946254135254538254146254132322e706e67#from=url&amp;id=oYN9v&amp;originHeight=137&amp;originWidth=1081&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+<meta property="article:published_time" content="2024-01-27T02:41:02.000Z">
+<meta property="article:modified_time" content="2024-03-04T02:51:02.753Z">
+<meta property="article:author" content="JIA">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://camo.githubusercontent.com/30d4dd4db0398e619b947ec55701a35e976cc4cddb3f485f11859c7c07fa2181/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545382541462541442545352538462541352545362538392541372545382541312538432545392541322539312545372538452538372e706e67#from=url&amp;id=nbDMC&amp;originHeight=292&amp;originWidth=1047&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=">
+  
+  
+  
+  <meta name="keywords" content="MySQL">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.26.8">
+
+  
+    <link rel="shortcut icon" href="https://i.ibb.co/t8bH857/avatar.png">
+  
+
+  
+
+  
+  
+</head>
+<body>
+
+<div class="l_body content tech" id="start" layout="post" ><aside class="l_left"><div class="sidebar-container sidebar-blur">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://i.ibb.co/t8bH857/avatar.png(/)" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">JIA</div><div class="sub normal cap">种一棵树最好的时间是十年前</div><div class="sub hover cap" style="opacity:0"> 其次是现在</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"><a class="nav-item active" title="主页" href="/" style="color:#1BCDFC"><span>主页</span></a><a class="nav-item" title="友链" href="/friends/" style="color:#F44336"><span>友链</span></a><a class="nav-item" title="关于" href="/about/" style="color:#F44336"><span>关于</span></a></nav>
+</div>
+<div class="widgets">
+
+<widget class="widget-wrapper toc single" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#sql-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90"><span class="toc-text"> SQL 性能分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#sql-%E6%89%A7%E8%A1%8C%E9%A2%91%E7%8E%87"><span class="toc-text"> SQL 执行频率</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97"><span class="toc-text"> 慢查询日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#explain"><span class="toc-text"> EXPLAIN</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92"><span class="toc-text"> 执行计划</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#id"><span class="toc-text"> id</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#select"><span class="toc-text"> select</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#type"><span class="toc-text"> type</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#key"><span class="toc-text"> key</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#extra"><span class="toc-text"> Extra</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#profiles"><span class="toc-text"> PROFILES</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#trace"><span class="toc-text"> TRACE</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E6%96%B9%E5%BC%8F"><span class="toc-text"> 优化方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E6%95%B0%E6%8D%AE%E4%BC%98%E5%8C%96"><span class="toc-text"> 插入数据优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E9%94%AE%E4%BC%98%E5%8C%96"><span class="toc-text"> 主键优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A1%B5%E5%88%86%E8%A3%82"><span class="toc-text"> 页分裂</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A1%B5%E5%90%88%E5%B9%B6"><span class="toc-text"> 页合并</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%87%AA%E5%A2%9E%E6%9C%BA%E5%88%B6"><span class="toc-text"> 自增机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%87%AA%E5%A2%9E-id"><span class="toc-text"> 自增 ID</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BB%E9%94%AE%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-text"> 主键设计原则</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#order-by-%E4%BC%98%E5%8C%96"><span class="toc-text"> ORDER BY 优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#group-by-%E4%BC%98%E5%8C%96"><span class="toc-text"> GROUP BY 优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#limit-%E5%88%86%E9%A1%B5%E4%BC%98%E5%8C%96"><span class="toc-text"> LIMIT 分页优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#count-%E8%AE%A1%E6%95%B0%E4%BC%98%E5%8C%96"><span class="toc-text"> COUNT 计数优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#update-%E6%9B%B4%E6%96%B0%E4%BC%98%E5%8C%96"><span class="toc-text"> UPDATE 更新优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%81%94%E5%90%88%E6%9F%A5%E8%AF%A2-or"><span class="toc-text"> 联合查询 OR</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B5%8C%E5%A5%97%E5%AD%90%E6%9F%A5%E8%AF%A2"><span class="toc-text"> 嵌套(子)查询</span></a></li></ol></li></ol></div></div></widget>
+
+
+
+
+
+
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2024/01/24/MySQL--%E9%AB%98%E7%BA%A7%E7%BB%93%E6%9E%84/"><span class="title">MySQL--高级结构</span></a><a class="item title" href="/2024/01/22/MySQL--%E7%B4%A2%E5%BC%95/"><span class="title">MySQL--索引</span></a><a class="item title" href="/2023/05/21/MySQL--%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/"><span class="title">MySQL--存储引擎</span></a><a class="item title" href="/2023/05/15/MySQL--%E5%8D%95%E8%A1%A8%E6%93%8D%E4%BD%9C/"><span class="title">MySQL--单表操作</span></a><a class="item title" href="/2023/05/16/MySQL--%E5%A4%9A%E8%A1%A8%E6%93%8D%E4%BD%9C/"><span class="title">MySQL--多表操作</span></a><a class="item title" href="/2023/05/11/MySQL--%E5%85%A5%E9%97%A8/"><span class="title">MySQL--入门</span></a><a class="item title" href="/2024/01/26/MySQL--%E9%94%81%E6%9C%BA%E5%88%B6/"><span class="title">MySQL--锁机制</span></a><a class="item title" href="/2024/01/31/MySQL--%E8%BF%90%E7%BB%B4/"><span class="title">MySQL--运维</span></a><a class="item title" href="/2024/01/29/MySQL--Innodb%20%E5%BC%95%E6%93%8E/"><span class="title">MySQL--Innodb引擎</span></a><a class="item title active" href="/2024/01/27/MySQL--SQL%20%E4%BC%98%E5%8C%96/"><span class="title">MySQL--SQL优化</span><svg class="active-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M21 11.098v4.993c0 3.096 0 4.645-.734 5.321c-.35.323-.792.526-1.263.58c-.987.113-2.14-.907-4.445-2.946c-1.02-.901-1.529-1.352-2.118-1.47a2.225 2.225 0 0 0-.88 0c-.59.118-1.099.569-2.118 1.47c-2.305 2.039-3.458 3.059-4.445 2.945a2.238 2.238 0 0 1-1.263-.579C3 20.736 3 19.188 3 16.091v-4.994C3 6.81 3 4.666 4.318 3.333C5.636 2 7.758 2 12 2c4.243 0 6.364 0 7.682 1.332C21 4.665 21 6.81 21 11.098" opacity=".5"/><path fill="currentColor" d="M9 5.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5z"/></svg></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/blog/5oPLsu.jpg">
+  <div class="content">
+    
+<div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2024-01-27T02:41:02.000Z">2024-01-27</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2024-03-04T02:51:02.753Z">2024-03-04</time></span></div></div>
+</div>
+
+    
+    <div class="bottom">
+      <div class="text-area">
+        <h1 class="text title"><span>MySQL--SQL优化</span></h1>
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content "><h2 id="sql-性能分析"><a class="markdownIt-Anchor" href="#sql-性能分析"></a> SQL 性能分析</h2>
+<h3 id="sql-执行频率"><a class="markdownIt-Anchor" href="#sql-执行频率"></a> SQL 执行频率</h3>
+<p>MySQL 客户端连接成功后，查询服务器状态信息：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> [SESSION<span class="operator">|</span><span class="keyword">GLOBAL</span>] STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;&#x27;</span>;</span><br><span class="line"><span class="comment">-- SESSION: 显示当前会话连接的统计结果，默认参数</span></span><br><span class="line"><span class="comment">-- GLOBAL: 显示自数据库上次启动至今的统计结果</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看 SQL 执行频率：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;Com_____&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>Com_xxx 表示每种语句执行的次数<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/30d4dd4db0398e619b947ec55701a35e976cc4cddb3f485f11859c7c07fa2181/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545382541462541442545352538462541352545362538392541372545382541312538432545392541322539312545372538452538372e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/30d4dd4db0398e619b947ec55701a35e976cc4cddb3f485f11859c7c07fa2181/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545382541462541442545352538462541352545362538392541372545382541312538432545392541322539312545372538452538372e706e67#from=url&amp;id=nbDMC&amp;originHeight=292&amp;originWidth=1047&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>查询 SQL 语句影响的行数：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;Innodb_rows_%&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/038643518149f17e042be2650f07957f6f7af921df324479414a4eaa5d374d4e/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545382541462541442545352538462541352545352542442542312545352539332538442545372539412538342545382541312538432545362539352542302e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/038643518149f17e042be2650f07957f6f7af921df324479414a4eaa5d374d4e/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545382541462541442545352538462541352545352542442542312545352539332538442545372539412538342545382541312538432545362539352542302e706e67#from=url&amp;id=CZGiN&amp;originHeight=189&amp;originWidth=1068&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a><br />
+<strong>Com_xxxx</strong>：这些参数对于所有存储引擎的表操作都会进行累计<br />
+<strong>Innodb_xxxx</strong>：这几个参数只是针对 InnoDB 存储引擎的，累加的算法也略有不同</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Com_select</td>
+<td>执行 SELECT 操作的次数，一次查询只累加 1</td>
+</tr>
+<tr>
+<td>Com_insert</td>
+<td>执行 INSERT 操作的次数，对于批量插入的 INSERT 操作，只累加一次</td>
+</tr>
+<tr>
+<td>Com_update</td>
+<td>执行 UPDATE 操作的次数</td>
+</tr>
+<tr>
+<td>Com_delete</td>
+<td>执行 DELETE 操作的次数</td>
+</tr>
+<tr>
+<td>Innodb_rows_read</td>
+<td>执行 SELECT 查询返回的行数</td>
+</tr>
+<tr>
+<td>Innodb_rows_inserted</td>
+<td>执行 INSERT 操作插入的行数</td>
+</tr>
+<tr>
+<td>Innodb_rows_updated</td>
+<td>执行 UPDATE 操作更新的行数</td>
+</tr>
+<tr>
+<td>Innodb_rows_deleted</td>
+<td>执行 DELETE 操作删除的行数</td>
+</tr>
+<tr>
+<td>Connections</td>
+<td>试图连接 MySQL 服务器的次数</td>
+</tr>
+<tr>
+<td>Uptime</td>
+<td>服务器工作时间</td>
+</tr>
+<tr>
+<td>Slow_queries</td>
+<td>慢查询的次数</td>
+</tr>
+</tbody>
+</table>
+<h3 id="慢查询日志"><a class="markdownIt-Anchor" href="#慢查询日志"></a> 慢查询日志</h3>
+<p>SQL 执行慢有两种情况：</p>
+<ul>
+<li>偶尔慢：DB 在刷新脏页（事务原理部分）
+<ul>
+<li>redo log 写满了</li>
+<li>内存不够用，要从 LRU 链表中淘汰</li>
+<li>MySQL 认为系统空闲的时候</li>
+<li>MySQL 关闭时</li>
+</ul>
+</li>
+<li>一直慢的原因：索引没有设计好、SQL 语句没写好、MySQL 选错了索引</li>
+</ul>
+<p>通过以下两种方式定位执行效率较低的 SQL 语句</p>
+<ul>
+<li>慢日志查询： 慢查询日志在查询结束以后才记录，执行效率出现问题时查询日志并不能定位问题配置文件修改：修改<code>.cnf 文件 vim /etc/mysql/my.cnf</code>，重启 MySQL 服务器</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">slow_query_log<span class="operator">=</span><span class="keyword">ON</span></span><br><span class="line">slow_query_log_file<span class="operator">=</span><span class="operator">/</span>usr<span class="operator">/</span><span class="keyword">local</span><span class="operator">/</span>mysql<span class="operator">/</span>var<span class="operator">/</span>localhost<span class="operator">-</span>slow.log</span><br><span class="line">long_query_time<span class="operator">=</span><span class="number">1</span>	#记录超过long_query_time秒的<span class="keyword">SQL</span>语句的日志</span><br><span class="line">log<span class="operator">-</span>queries<span class="operator">-</span><span class="keyword">not</span><span class="operator">-</span><span class="keyword">using</span><span class="operator">-</span>indexes <span class="operator">=</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>使用命令配置：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">SET</span> slow_query_log<span class="operator">=</span><span class="keyword">ON</span>;</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">SET</span> <span class="keyword">GLOBAL</span> slow_query_log<span class="operator">=</span><span class="keyword">ON</span>;</span><br></pre></td></tr></table></figure>
+<p>查看是否配置成功：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;%query%&#x27;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>SHOW PROCESSLIST：<strong>实时查看</strong>当前 MySQL 在进行的连接线程，包括线程的状态、是否锁表、SQL 的执行情况，同时对一些锁表操作进行优化</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/61210e0cc91f7236d7186a4a6dec5a0b56ceaf1371bef7c11537782cbd5bf2dd/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53484f575f50524f434553534c4953542545352539312542442545342542422541342e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/61210e0cc91f7236d7186a4a6dec5a0b56ceaf1371bef7c11537782cbd5bf2dd/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53484f575f50524f434553534c4953542545352539312542442545342542422541342e706e67#from=url&amp;id=fhjiz&amp;originHeight=167&amp;originWidth=1050&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h3 id="explain"><a class="markdownIt-Anchor" href="#explain"></a> EXPLAIN</h3>
+<h4 id="执行计划"><a class="markdownIt-Anchor" href="#执行计划"></a> 执行计划</h4>
+<p>通过 EXPLAIN 命令获取执行 SQL 语句的信息，包括在 SELECT 语句执行过程中如何连接和连接的顺序，执行计划在优化器优化完成后、执行器之前生成，然后执行器会调用存储引擎检索数据。<br />
+查询 SQL 语句的执行计划：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> table_1 <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/ae5c812c670d92e1ac45451c29c00987099e8afbad420723e91e945e5e217c51/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d6578706c61696e25453625394625413525453825414625413253514c2545382541462541442545352538462541352545372539412538342545362538392541372545382541312538432545382541452541312545352538382539322e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/ae5c812c670d92e1ac45451c29c00987099e8afbad420723e91e945e5e217c51/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d6578706c61696e25453625394625413525453825414625413253514c2545382541462541442545352538462541352545372539412538342545362538392541372545382541312538432545382541452541312545352538382539322e706e67#from=url&amp;id=yyhi6&amp;originHeight=130&amp;originWidth=1047&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>SELECT 的序列号</td>
+</tr>
+<tr>
+<td>select_type</td>
+<td>表示 SELECT 的类型</td>
+</tr>
+<tr>
+<td>table</td>
+<td>访问数据库中表名称，有时可能是简称或者临时表名称（&lt;table_name&gt;）</td>
+</tr>
+<tr>
+<td>type</td>
+<td>表示表的连接类型</td>
+</tr>
+<tr>
+<td>possible_keys</td>
+<td>表示查询时，可能使用的索引</td>
+</tr>
+<tr>
+<td>key</td>
+<td>表示实际使用的索引</td>
+</tr>
+<tr>
+<td>key_len</td>
+<td>索引字段的长度</td>
+</tr>
+<tr>
+<td>ref</td>
+<td>表示与索引列进行等值匹配的对象，常数、某个列、函数等，type 必须在（range, const] 之间，左闭右开</td>
+</tr>
+<tr>
+<td>rows</td>
+<td>扫描出的行数，表示 MySQL 根据表统计信息及索引选用情况，<strong>估算</strong>的找到所需的记录扫描的行数</td>
+</tr>
+<tr>
+<td>filtered</td>
+<td>条件过滤的行百分比，单表查询没意义，用于连接查询中对驱动表的扇出进行过滤，查询优化器预测所有扇出值满足剩余查询条件的百分比，相乘以后表示多表查询中还要对被驱动执行查询的次数</td>
+</tr>
+<tr>
+<td>extra</td>
+<td>执行情况的说明和描述</td>
+</tr>
+</tbody>
+</table>
+<p>MySQL <strong>执行计划的局限</strong>：</p>
+<ul>
+<li>只是计划，不是执行 SQL 语句，可以随着底层优化器输入的更改而更改</li>
+<li>EXPLAIN 不会告诉显示关于触发器、存储过程的信息对查询的影响情况， 不考虑各种 Cache</li>
+<li>EXPLAIN 不能显示 MySQL 在执行查询时的动态，因为执行计划在执行<strong>查询之前生成</strong></li>
+<li>EXPALIN 只能解释 SELECT 操作，其他操作要重写为 SELECT 后查看执行计划</li>
+<li>EXPLAIN PLAN 显示的是在解释语句时数据库将如何运行 SQL 语句，由于执行环境和 EXPLAIN PLAN 环境的不同，此计划可能与 SQL 语句<strong>实际的执行计划不同</strong>，部分统计信息是估算的，并非精确值</li>
+</ul>
+<p>SHOW WARINGS：在使用 EXPALIN 命令后执行该语句，可以查询与执行计划相关的拓展信息，展示出 Level、Code、Message 三个字段，当 Code 为 1003 时，Message 字段展示的信息类似于将查询语句重写后的信息，但是不是等价，不能执行复制过来运行。<br />
+环境准备：<br />
+<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/1c78cfa981c1630a7aad099ea4da0aff6e0a0ce77b163c3d9a01563fcc707f8b/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545362538392541372545382541312538432545382541452541312545352538382539322545372538452541462545352541322538332545352538372538362545352541342538372e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/1c78cfa981c1630a7aad099ea4da0aff6e0a0ce77b163c3d9a01563fcc707f8b/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d2545362538392541372545382541312538432545382541452541312545352538382539322545372538452541462545352541322538332545352538372538362545352541342538372e706e67#from=url&amp;id=HcMUX&amp;originHeight=270&amp;originWidth=949&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h4 id="id"><a class="markdownIt-Anchor" href="#id"></a> id</h4>
+<p>id 代表 SQL 执行的顺序的标识，每个 SELECT 关键字对应一个唯一 id，所以在同一个 SELECT 关键字中的表的 id 都是相同的。SELECT 后的 FROM 可以跟随多个表，每个表都会对应一条记录，这些记录的 id 都是相同的，</p>
+<ul>
+<li>id 相同时，执行顺序由上至下。连接查询的执行计划，记录的 id 值都是相同的，出现在前面的表为驱动表，后面为被驱动表</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t_role r, t_user u, user_role ur <span class="keyword">WHERE</span> r.id <span class="operator">=</span> ur.role_id <span class="keyword">AND</span> u.id <span class="operator">=</span> ur.user_id ;</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/a7c99752fd4c0d634168d8bfa4d418a8e2004ade254d8cd182ec62c2236f5870/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d6578706c61696e25453425423925384269642545372539422542382545352539302538432e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/a7c99752fd4c0d634168d8bfa4d418a8e2004ade254d8cd182ec62c2236f5870/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d6578706c61696e25453425423925384269642545372539422542382545352539302538432e706e67#from=url&amp;id=zyUKP&amp;originHeight=160&amp;originWidth=1323&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>id 不同时，id 值越大优先级越高，越先被执行</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t_role <span class="keyword">WHERE</span> id <span class="operator">=</span> (<span class="keyword">SELECT</span> role_id <span class="keyword">FROM</span> user_role <span class="keyword">WHERE</span> user_id <span class="operator">=</span> (<span class="keyword">SELECT</span> id <span class="keyword">FROM</span> t_user <span class="keyword">WHERE</span> username <span class="operator">=</span> <span class="string">&#x27;stu1&#x27;</span>))</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/93b91a216717843727ad74c5c0bac8eb9fa9b5523b697748f71dc40cb8b13ace/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d6578706c61696e25453425423925384269642545342542382538442545352539302538432e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/93b91a216717843727ad74c5c0bac8eb9fa9b5523b697748f71dc40cb8b13ace/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d6578706c61696e25453425423925384269642545342542382538442545352539302538432e706e67#from=url&amp;id=K7upG&amp;originHeight=181&amp;originWidth=1335&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>id 有相同也有不同时，id 相同的可以认为是一组，从上往下顺序执行；在所有的组中，id 的值越大的组，优先级越高，越先执行</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t_role r , (<span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> user_role ur <span class="keyword">WHERE</span> ur.`user_id` <span class="operator">=</span> <span class="string">&#x27;2&#x27;</span>) a <span class="keyword">WHERE</span> r.id <span class="operator">=</span> a.role_id ; </span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/0614b591de9f9a52d5afa6e991bc8ca015c530294e9cb06507f6af1fbccb45b5/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d6578706c61696e25453425423925384269642545372539422542382545352539302538432545352539322538432545342542382538442545352539302538432e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/0614b591de9f9a52d5afa6e991bc8ca015c530294e9cb06507f6af1fbccb45b5/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d6578706c61696e25453425423925384269642545372539422542382545352539302538432545352539322538432545342542382538442545352539302538432e706e67#from=url&amp;id=ZhtCF&amp;originHeight=169&amp;originWidth=1284&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>id 为 NULL 时代表的是临时表</li>
+</ul>
+<h4 id="select"><a class="markdownIt-Anchor" href="#select"></a> select</h4>
+<p>表示查询中每个 select 子句的类型（简单 OR 复杂）。</p>
+<table>
+<thead>
+<tr>
+<th>select_type</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SIMPLE</td>
+<td>简单的 SELECT 查询，查询中不包含子查询或者 UNION</td>
+</tr>
+<tr>
+<td>PRIMARY</td>
+<td>查询中若包含任何复杂的子查询，最外层（也就是最左侧）查询标记为该标识</td>
+</tr>
+<tr>
+<td>UNION</td>
+<td>对于 UNION 或者 UNION ALL 的复杂查询，除了最左侧的查询，其余的小查询都是 UNION</td>
+</tr>
+<tr>
+<td>UNION RESULT</td>
+<td>UNION 需要使用临时表进行去重，临时表的是 UNION RESULT</td>
+</tr>
+<tr>
+<td>DEPENDENT UNION</td>
+<td>对于 UNION 或者 UNION ALL 的复杂查询，如果各个小查询都依赖外层查询，是相关子查询，除了最左侧的小查询为 DEPENDENT SUBQUERY，其余都是 DEPENDENT UNION</td>
+</tr>
+<tr>
+<td>SUBQUERY</td>
+<td>子查询不是相关子查询，该子查询第一个 SELECT 代表的查询就是这种类型，会进行物化（该子查询只需要执行一次）</td>
+</tr>
+<tr>
+<td>DEPENDENT SUBQUERY</td>
+<td>子查询是相关子查询，该子查询第一个 SELECT 代表的查询就是这种类型，不会物化（该子查询需要执行多次）</td>
+</tr>
+<tr>
+<td>DERIVED</td>
+<td>在 FROM 列表中包含的子查询，被标记为 DERIVED（衍生），也就是生成物化派生表的这个子查询</td>
+</tr>
+<tr>
+<td>MATERIALIZED</td>
+<td>将子查询物化后与与外层进行连接查询，生成物化表的子查询</td>
+</tr>
+</tbody>
+</table>
+<p>子查询为 DERIVED：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> (<span class="keyword">SELECT</span> key1 <span class="keyword">FROM</span> t1) <span class="keyword">AS</span> derived_1 <span class="keyword">WHERE</span> key1 <span class="operator">&gt;</span> <span class="number">10</span></span><br></pre></td></tr></table></figure>
+<p>子查询为 MATERIALIZED：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t1 <span class="keyword">WHERE</span> key1 <span class="keyword">IN</span> (<span class="keyword">SELECT</span> key1 <span class="keyword">FROM</span> t2)</span><br></pre></td></tr></table></figure>
+<h4 id="type"><a class="markdownIt-Anchor" href="#type"></a> type</h4>
+<p>对表的访问方式，表示 MySQL 在表中找到所需行的方式，又称访问类型。</p>
+<table>
+<thead>
+<tr>
+<th>type</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ALL</td>
+<td>全表扫描，如果是 InnoDB 引擎是扫描聚簇索引</td>
+</tr>
+<tr>
+<td>index</td>
+<td>可以使用覆盖索引，但需要扫描全部索引</td>
+</tr>
+<tr>
+<td>range</td>
+<td>索引范围扫描，常见于 between、&lt;、&gt; 等的查询</td>
+</tr>
+<tr>
+<td>index_subquery</td>
+<td>子查询可以普通索引，则子查询的 type 为 index_subquery</td>
+</tr>
+<tr>
+<td>unique_subquery</td>
+<td>子查询可以使用主键或唯一二级索引，则子查询的 type 为 index_subquery</td>
+</tr>
+<tr>
+<td>index_merge</td>
+<td>索引合并</td>
+</tr>
+<tr>
+<td>ref_or_null</td>
+<td>非唯一性索引（普通二级索引）并且可以存储 NULL，进行等值匹配</td>
+</tr>
+<tr>
+<td>ref</td>
+<td>非唯一性索引与常量等值匹配</td>
+</tr>
+<tr>
+<td>eq_ref</td>
+<td>唯一性索引（主键或不存储 NULL 的唯一二级索引）进行等值匹配，如果二级索引是联合索引，那么所有联合的列都要进行等值匹配</td>
+</tr>
+<tr>
+<td>const</td>
+<td>通过主键或者唯一二级索引与常量进行等值匹配</td>
+</tr>
+<tr>
+<td>system</td>
+<td>system 是 const 类型的特例，当查询的表只有一条记录的情况下，使用 system</td>
+</tr>
+<tr>
+<td>NULL</td>
+<td>MySQL 在优化过程中分解语句，执行时甚至不用访问表或索引</td>
+</tr>
+</tbody>
+</table>
+<p>从上到下，性能从差到好，一般来说需要保证查询至少达到 range 级别， 最好达到 ref。</p>
+<h4 id="key"><a class="markdownIt-Anchor" href="#key"></a> key</h4>
+<p><strong>possible_keys</strong>：</p>
+<ul>
+<li>指出 MySQL 能使用哪个索引在表中找到记录，查询涉及到的字段上若存在索引，则该索引将被列出，但不一定被查询使用</li>
+<li>如果该列是 NULL，则没有相关的索引</li>
+</ul>
+<p><strong>key</strong>：</p>
+<ul>
+<li>显示 MySQL 在查询中实际使用的索引，若没有使用索引，显示为 NULL</li>
+<li>查询中若使用了<strong>覆盖索引</strong>，则该索引可能出现在 key 列表，不出现在 possible_keys</li>
+</ul>
+<p><strong>key_len</strong>：</p>
+<ul>
+<li>表示索引中使用的字节数，可通过该列计算查询中使用的索引的长度</li>
+<li>key_len 显示的值为索引字段的最大可能长度，并非实际使用长度，即 key_len 是根据表定义计算而得，不是通过表内检索出的</li>
+<li>在不损失精确性的前提下，长度越短越好</li>
+</ul>
+<h4 id="extra"><a class="markdownIt-Anchor" href="#extra"></a> Extra</h4>
+<p>其他的额外的执行计划信息，在该列展示：</p>
+<ul>
+<li>No tables used：查询语句中使用 FROM dual 或者没有 FROM 语句</li>
+<li>Impossible WHERE：查询语句中的 WHERE 子句条件永远为 FALSE，会导致没有符合条件的行</li>
+<li>Using index：该值表示相应的 SELECT 操作中使用了<strong>覆盖索引</strong>（Covering Index）</li>
+<li>Using index condition：第一种情况是搜索条件中虽然出现了索引列，但是部分条件无法形成扫描区间（<strong>索引失效</strong>），会根据可用索引的条件先搜索一遍再匹配无法使用索引的条件，回表查询数据；第二种是使用了<strong>索引条件下推</strong>优化</li>
+<li>Using where：搜索的数据需要在 Server 层判断，无法使用索引下推</li>
+<li>Using join buffer：连接查询被驱动表无法利用索引，需要连接缓冲区来存储中间结果</li>
+<li>Using filesort：无法利用索引完成排序（优化方向），需要对数据使用外部排序算法，将取得的数据在内存或磁盘中进行排序</li>
+<li>Using temporary：表示 MySQL 需要使用临时表来存储结果集，常见于<strong>排序、去重（UNION）、分组</strong>等场景</li>
+<li>Select tables optimized away：说明仅通过使用索引，优化器可能仅从聚合函数结果中返回一行</li>
+<li>No tables used：Query 语句中使用 from dual 或不含任何 from 子句</li>
+</ul>
+<blockquote>
+<p>参考文章：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ggjucheng/archive/2012/11/11/2765237.html">https://www.cnblogs.com/ggjucheng/archive/2012/11/11/2765237.html</a></p>
+</blockquote>
+<h3 id="profiles"><a class="markdownIt-Anchor" href="#profiles"></a> PROFILES</h3>
+<p>SHOW PROFILES 能够在做 SQL 优化时分析当前会话中语句执行的<strong>资源消耗</strong>情况。</p>
+<ul>
+<li>通过 have_profiling 参数，能够看到当前 MySQL 是否支持 profile：</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/875816bdbb926c9788373cdf7c816df2d871e20bca0794e7c81b8aceec6976e6/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d686176655f70726f66696c696e672e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/875816bdbb926c9788373cdf7c816df2d871e20bca0794e7c81b8aceec6976e6/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d686176655f70726f66696c696e672e706e67#from=url&amp;id=rv2LH&amp;originHeight=135&amp;originWidth=1059&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>默认 profiling 是关闭的，可以通过 set 语句在 Session 级别开启 profiling：</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/c768c08af1abd51fd854b2066b27542646d74e83f64849f2286ec697e8ad58b6/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d70726f66696c696e672e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/c768c08af1abd51fd854b2066b27542646d74e83f64849f2286ec697e8ad58b6/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d70726f66696c696e672e706e67#from=url&amp;id=AhDpT&amp;originHeight=131&amp;originWidth=1055&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> profiling<span class="operator">=</span><span class="number">1</span>; #开启profiling 开关；</span><br></pre></td></tr></table></figure>
+<ul>
+<li>执行 SHOW PROFILES 指令， 来查看 SQL 语句执行的耗时:</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> PROFILES;</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/2a028a4f922c393ebb2dc0ba385d38af00f5bad22488bd8eafe1bc3614ae78b9/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453625394625413525453725394325384253514c2545382541462541442545352538462541352545362538392541372545382541312538432545382538302539372545362539372542362e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/2a028a4f922c393ebb2dc0ba385d38af00f5bad22488bd8eafe1bc3614ae78b9/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453625394625413525453725394325384253514c2545382541462541442545352538462541352545362538392541372545382541312538432545382538302539372545362539372542362e706e67#from=url&amp;id=nUnuk&amp;originHeight=221&amp;originWidth=1059&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>查看到该 SQL 执行过程中每个线程的状态和消耗的时间：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> PROFILE <span class="keyword">FOR</span> QUERY query_id;</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/2cb46adff1a244fd65620587cb0396c94b322fd8e95eb95046d7740ea6d86d57/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545362538392541372545382541312538432545362541462538462545342542382541412545372538412542362545362538302538312545362542362538382545382538302539372545372539412538342545362539372542362545392539372542342e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/2cb46adff1a244fd65620587cb0396c94b322fd8e95eb95046d7740ea6d86d57/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545362538392541372545382541312538432545362541462538462545342542382541412545372538412542362545362538302538312545362542362538382545382538302539372545372539412538342545362539372542362545392539372542342e706e67#from=url&amp;id=s5ORs&amp;originHeight=385&amp;originWidth=1056&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>在获取到最消耗时间的线程状态后，MySQL 支持选择 all、cpu、block io 、context switch、page faults 等类型查看 MySQL 在使用什么资源上耗费了过高的时间。例如，选择查看 CPU 的耗费时间：</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/ccd775e3844be19a98ea32c08c04bd40b12f9c082a06d802a98daf097917854d/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545362538392541372545382541312538432545362541462538462545342542382541412545372538412542362545362538302538312545362542362538382545382538302539372545372539412538344350552e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/ccd775e3844be19a98ea32c08c04bd40b12f9c082a06d802a98daf097917854d/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d53514c2545362538392541372545382541312538432545362541462538462545342542382541412545372538412542362545362538302538312545362542362538382545382538302539372545372539412538344350552e706e67#from=url&amp;id=gVqxi&amp;originHeight=379&amp;originWidth=1057&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>Status：SQL 语句执行的状态</li>
+<li>Durationsql：执行过程中每一个步骤的耗时</li>
+<li>CPU_user：当前用户占有的 CPU</li>
+<li>CPU_system：系统占有的 CPU</li>
+</ul>
+<h3 id="trace"><a class="markdownIt-Anchor" href="#trace"></a> TRACE</h3>
+<p>MySQL 提供了对 SQL 的跟踪， 通过 trace 文件可以查看优化器<strong>生成执行计划的过程。</strong></p>
+<ul>
+<li>打开 trace 功能，设置格式为 JSON，并设置 trace 的最大使用内存，避免解析过程中因默认内存过小而不能够完整展示</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> optimizer_trace<span class="operator">=</span>&quot;enabled=on&quot;,end_markers_in_json<span class="operator">=</span><span class="keyword">ON</span>;	<span class="comment">-- 会话内有效</span></span><br><span class="line"><span class="keyword">SET</span> optimizer_trace_max_mem_size<span class="operator">=</span><span class="number">1000000</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>执行 SQL 语句：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> tb_item <span class="keyword">WHERE</span> id <span class="operator">&lt;</span> <span class="number">4</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>检查 information_schema.optimizer_trace：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> information_schema.optimizer_trace \G; <span class="comment">-- \G代表竖列展示</span></span><br></pre></td></tr></table></figure>
+<p>执行信息主要有三个阶段：prepare 阶段、optimize 阶段（成本分析）、execute 阶段（执行）。</p>
+<h2 id="优化方式"><a class="markdownIt-Anchor" href="#优化方式"></a> 优化方式</h2>
+<h3 id="插入数据优化"><a class="markdownIt-Anchor" href="#插入数据优化"></a> 插入数据优化</h3>
+<p>如果使用 insert 插入数据，建议批量插入，以减少数据库连接次数，优化性能。<br />
+当插入的数据量过于庞大，可以使用 load 命令导入数据的，适当的设置可以提高导入的效率。</p>
+<ul>
+<li>语法</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LOAD DATA <span class="keyword">LOCAL</span> INFILE <span class="operator">=</span> <span class="string">&#x27;/home/seazean/sql1.log&#x27;</span> <span class="keyword">INTO</span> <span class="keyword">TABLE</span> `tb_user_1` FIELD TERMINATED <span class="keyword">BY</span> <span class="string">&#x27;,&#x27;</span> LINES TERMINATED <span class="keyword">BY</span> <span class="string">&#x27;\n&#x27;</span>; <span class="comment">-- 文件格式如上图</span></span><br></pre></td></tr></table></figure>
+<p>对于 InnoDB 类型的表，有以下几种方式可以提高导入的效率：</p>
+<ol>
+<li><strong>主键顺序插入</strong>：因为 InnoDB 类型的表是按照主键的顺序保存的，所以将导入的数据按照主键的顺序排列，可以有效的提高导入数据的效率，如果 InnoDB 表没有主键，那么系统会自动默认创建一个内部列作为主键</li>
+</ol>
+<p>主键是否连续对性能影响不大，只要是<strong>递增</strong>的就可以，比如雪花算法产生的 ID 不是连续的，但是是递增的，因为递增可以让主键索引<strong>尽量</strong>地保持顺序插入，<strong>避免了页分裂</strong>，因此索引更紧凑。</p>
+<ol start="2">
+<li>
+<p><strong>关闭唯一性校验</strong>：在导入数据前执行 <code>SET UNIQUE_CHECKS=0</code>，关闭唯一性校验；导入结束后执行 <code>SET UNIQUE_CHECKS=1</code>，恢复唯一性校验，可以提高导入的效率。<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/8d019781cb8dce16b6d417b2d28d69ce6e3cbed7f4bab90a50c0eaa739564e34/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c2545362538462539322545352538352541352545362539352542302545362538442541452545352538352542332545392539372541442545352539342541462545342542382538302545362538302541372545362541302541312545392541412538432e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/8d019781cb8dce16b6d417b2d28d69ce6e3cbed7f4bab90a50c0eaa739564e34/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c2545362538462539322545352538352541352545362539352542302545362538442541452545352538352542332545392539372541442545352539342541462545342542382538302545362538302541372545362541302541312545392541412538432e706e67#from=url&amp;id=gn9aC&amp;originHeight=236&amp;originWidth=1181&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+</li>
+<li>
+<p><strong>手动提交事务</strong>：如果应用使用自动提交的方式，建议在导入前执行<code>SET AUTOCOMMIT=0</code>，关闭自动提交；导入结束后再打开自动提交，可以提高导入的效率。</p>
+</li>
+</ol>
+<p>事务需要控制大小，事务太大可能会影响执行的效率。MySQL 有 innodb_log_buffer_size 配置项，超过这个值的日志会写入磁盘数据，效率会下降，所以在事务大小达到配置项数据级前进行事务提交可以提高效率<a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/f28b7147234c668847037bad32c1aa3044f389466cfb02a9f2cdfa8978c7d749/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c2545362538462539322545352538352541352545362539352542302545362538442541452545362538392538422545352538412541382545362538462539302545342542412541342545342542412538422545352538412541312e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/f28b7147234c668847037bad32c1aa3044f389466cfb02a9f2cdfa8978c7d749/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c2545362538462539322545352538352541352545362539352542302545362538442541452545362538392538422545352538412541382545362538462539302545342542412541342545342542412538422545352538412541312e706e67#from=url&amp;id=ZPgel&amp;originHeight=318&amp;originWidth=1186&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<h3 id="主键优化"><a class="markdownIt-Anchor" href="#主键优化"></a> 主键优化</h3>
+<p>在InnoDB存储引擎中，表数据都是根据主键顺序组织存放的，这种存储方式的表称为索引组织表 (index organized table IOT)。<br />
+行数据，都是存储在聚集索引的叶子节点上的。在InnoDB引擎中，数据行是记录在逻辑结构 page 页中的，而每一个页的大小是固定的，默认16K。那也就意味着，一个页中所存储的行也是有限的，如果插入的数据行row在该页存储不小，将会存储到下一个页中，页与页之间会通过指针连接。</p>
+<h4 id="页分裂"><a class="markdownIt-Anchor" href="#页分裂"></a> 页分裂</h4>
+<p>页可以为空，也可以填充一半，也可以填充100%。每个页包含了2-N行数据(如果一行数据过大，会行溢出)，根据主键排列。</p>
+<ul>
+<li>主键顺序插入效果</li>
+</ul>
+<ol>
+<li>从磁盘中申请页， 主键顺序插入</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/1.png" alt="" /></p>
+<ol>
+<li>第一个页没有满，继续往第一页插入</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/2.png" alt="" /></p>
+<ol>
+<li>当第一个也写满之后，再申请并写入第二个页，页与页之间会通过指针连接</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/3.png" alt="" /></p>
+<ol>
+<li>当第二页写满了，再往第三页写入，以此类推</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/4.png" alt="" /></p>
+<ul>
+<li>主键乱序插入效果</li>
+</ul>
+<ol>
+<li>加入1#,2#页都已经写满了，存放了如图所示的数据</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/5.png" alt="" /></p>
+<ol>
+<li>此时再插入id为50的记录，会再次开启一个页，写入新的页中吗？答案是不会。因为，索引结构的叶子节点是有顺序的。按照顺序，应该存储在47之后。</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/6.png" alt="" /></p>
+<ol>
+<li>但是47所在的1#页，已经写满了，存储不了50对应的数据了。 那么此时会开辟一个新的页 3#。</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/7.png" alt="" /></p>
+<ol>
+<li>但是并不会直接将50存入3#页，而是会将1#页后一半的数据，移动到3#页，然后在3#页，插入50。</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/8.png" alt="" /></p>
+<ol>
+<li>移动数据，并插入id为50的数据之后，那么此时，这三个页之间的数据顺序是有问题的。 1#的下一个 页，应该是3#， 3#的下一个页是2#。 所以，此时，需要重新设置链表指针。</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/9.png" alt="" /><br />
+上述的这种现象，称之为 “页分裂”，是比较耗费性能的操作。</p>
+<h4 id="页合并"><a class="markdownIt-Anchor" href="#页合并"></a> 页合并</h4>
+<p>假设目前表中已有数据的索引结构(叶子节点)如下：<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/10.png" alt="" /><br />
+当我们对已有数据进行删除时，具体的效果如下:<br />
+当删除一行记录时，实际上记录并没有被物理删除，只是记录被标记（flaged）为删除并且它的空间，<br />
+变得允许被其他记录声明使用。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/11.png" alt="" /><br />
+当页中删除的记录达到 <strong>MERGE_THRESHOLD（默认为页的50%）</strong>，InnoDB会开始寻找最靠近的页（前或后）看看是否可以将两个页合并以优化空间使用。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/12.png" alt="" /><br />
+删除数据，并将页合并之后，再次插入新的数据21，则直接插入3#页。<br />
+<img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/13.png" alt="" /><br />
+这个里面所发生的合并页的这个现象，就称之为 “页合并”。</p>
+<ul>
+<li>MERGE_THRESHOLD：合并页的阈值，可以自己设置，在创建表或者创建索引时指定。</li>
+</ul>
+<h4 id="自增机制"><a class="markdownIt-Anchor" href="#自增机制"></a> 自增机制</h4>
+<p>自增主键可以让主键索引尽量地保持在数据页中递增顺序插入，不自增需要寻找其他页插入，导致随机 IO 和页分裂的情况。<br />
+表的结构定义存放在后缀名为 .frm 的文件中，但是并不会保存自增值，不同的引擎对于自增值的保存策略不同：</p>
+<ul>
+<li>MyISAM 引擎的自增值保存在数据文件中</li>
+<li>InnoDB 引擎的自增值保存在了内存里，每次打开表都会去找自增值的最大值 max(id)，然后将 max(id)+1 作为当前的自增值；8.0 版本后，才有了自增值持久化的能力，将自增值的变更记录在了 redo log 中，重启的时候依靠 redo log 恢复重启之前的值</li>
+</ul>
+<p>在插入一行数据的时候，自增值的行为如下：</p>
+<ul>
+<li>如果插入数据时 id 字段指定为 0、null 或未指定值，那么就把这个表当前的 <code>AUTO_INCREMENT</code>值填到自增字段</li>
+<li>如果插入数据时 id 字段指定了具体的值，比如某次要插入的值是 X，当前的自增值是 Y
+<ul>
+<li>如果 X&lt;Y，那么这个表的自增值不变</li>
+<li>如果 X≥Y，就需要把当前自增值修改为新的自增值</li>
+</ul>
+</li>
+</ul>
+<p>参数说明：<code>auto_increment_offset</code> 和 <code>auto_increment_increment</code> 分别表示自增的初始值和步长，默认值都是 1。<br />
+语句执行失败也不回退自增 id，所以保证了自增 id 是递增的。，但不保证是连续的（不能回退，所以有些回滚事务的自增 id 就不会重新使用，导致出现不连续）。</p>
+<h4 id="自增-id"><a class="markdownIt-Anchor" href="#自增-id"></a> 自增 ID</h4>
+<p>MySQL 不同的自增 id 在达到上限后的表现不同：</p>
+<ul>
+<li>表的自增 id 如果是 int 类型，达到上限 2^32-1 后，再申请时值就不会改变，进而导致继续插入数据时报主键冲突的错误</li>
+<li>row_id 长度为 6 个字节，达到上限后则会归 0 再重新递增，如果出现相同的 row_id，后写的数据会覆盖之前的数据，造成旧数据丢失，影响的是数据可靠性，所以应该在 InnoDB 表中主动创建自增主键报主键冲突，插入失败影响的是可用性，而一般情况下，<strong>可靠性优先于可用性</strong></li>
+<li>Xid 长度 8 字节，由 Server 层维护，只需要不在同一个 binlog 文件中出现重复值即可，虽然理论上会出现重复值，但是概率极小</li>
+<li>InnoDB 的 max_trx_id 递增值每次 MySQL 重启都会被保存起来，重启也不会重置为 0，所以会导致一直增加到达上限，然后从 0 开始，这时原事务 0 修改的数据对当前事务就是可见的，产生脏读的现象只读事务不分配 trx_id，所以 trx_id 的增加速度变慢了</li>
+<li>thread_id 长度 4 个字节，到达上限后就会重置为 0，MySQL 设计了一个唯一数组的逻辑，给新线程分配 thread_id 时做判断，保证不会出现两个相同的 thread_id：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">do &#123;</span><br><span class="line">	new_id <span class="operator">=</span> thread_id_counter<span class="operator">+</span><span class="operator">+</span>;</span><br><span class="line">&#125; while (<span class="operator">!</span>thread_ids.insert_unique(new_id).<span class="keyword">second</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="主键设计原则"><a class="markdownIt-Anchor" href="#主键设计原则"></a> 主键设计原则</h4>
+<ol>
+<li>满足业务需求的情况下，尽量降低主键的长度。</li>
+<li>插入数据时，尽量选择顺序插入，选择使用 AUTO_INCREMENT 自增主键。</li>
+<li>尽量不要使用UUID做主键或者是其他自然主键，如身份证号。</li>
+<li>业务操作时，避免对主键的修改。</li>
+</ol>
+<h3 id="order-by-优化"><a class="markdownIt-Anchor" href="#order-by-优化"></a> ORDER BY 优化</h3>
+<p>数据准备：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `emp` (</span><br><span class="line">  `id` <span class="type">INT</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `name` <span class="type">VARCHAR</span>(<span class="number">100</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `age` <span class="type">INT</span>(<span class="number">3</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `salary` <span class="type">INT</span>(<span class="number">11</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`)</span><br><span class="line">) ENGINE<span class="operator">=</span>INNODB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8mb4;</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `emp` (`id`, `name`, `age`, `salary`) <span class="keyword">VALUES</span>(<span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;Tom&#x27;</span>,<span class="string">&#x27;25&#x27;</span>,<span class="string">&#x27;2300&#x27;</span>);</span><br><span class="line"><span class="keyword">CREATE</span> INDEX idx_emp_age_salary <span class="keyword">ON</span> emp(age, salary);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第一种是通过对返回数据进行排序，所有不通过索引直接返回结果的排序都叫 FileSort 排序，会在内存中重新排序</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">ORDER</span> <span class="keyword">BY</span> age <span class="keyword">DESC</span>;	<span class="comment">-- 年龄降序</span></span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/14.png" alt="" /></p>
+<ul>
+<li>第二种通过有序索引顺序扫描直接返回<strong>有序数据</strong>，这种情况为 Using index，不需要额外排序，操作效率高</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> id, age, salary <span class="keyword">FROM</span> emp <span class="keyword">ORDER</span> <span class="keyword">BY</span> age <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/15.png" alt="" /></p>
+<ul>
+<li>多字段排序：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> id,age,salary <span class="keyword">FROM</span> emp <span class="keyword">ORDER</span> <span class="keyword">BY</span> age <span class="keyword">DESC</span>, salary <span class="keyword">DESC</span>;</span><br><span class="line">EXPLAIN <span class="keyword">SELECT</span> id,age,salary <span class="keyword">FROM</span> emp <span class="keyword">ORDER</span> <span class="keyword">BY</span> salary <span class="keyword">DESC</span>, age <span class="keyword">DESC</span>;</span><br><span class="line">EXPLAIN <span class="keyword">SELECT</span> id,age,salary <span class="keyword">FROM</span> emp <span class="keyword">ORDER</span> <span class="keyword">BY</span> age <span class="keyword">DESC</span>, salary <span class="keyword">ASC</span>;</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/16.png" alt="" /></p>
+<ul>
+<li>Using filesort : 通过表的索引或全表扫描，读取满足条件的数据行，然后在排序缓冲区sort buffer中完成排序操作，所有不是通过索引直接返回排序结果的排序都叫 FileSort 排序。</li>
+<li>Using index : 通过有序索引顺序扫描直接返回有序数据，这种情况即为 using index，不需要额外排序，操作效率高。</li>
+</ul>
+<p>对于以上的两种排序方式，Using index的性能高，而Using filesort的性能低。<br />
+尽量减少额外的排序，通过索引直接返回有序数据。<strong>需要满足 Order by 使用相同的索引、Order By 的顺序和索引顺序相同、Order by 的字段都是升序或都是降序</strong>，否则需要额外的操作，就会出现 FileSort。</p>
+<ul>
+<li>ORDER BY RAND() 命令用来进行随机排序，会使用了临时内存表，临时内存表排序的时使用 rowid 排序方法</li>
+</ul>
+<p>优化方式：创建合适的索引能够减少 Filesort 的出现，但是某些情况下条件限制不能让 Filesort 消失，就要加快 Filesort 的排序操作。<br />
+内存临时表，MySQL 有两种 Filesort 排序算法：</p>
+<ol>
+<li>rowid 排序：首先根据条件取出排序字段和信息，然后在<strong>排序区 sort buffer（Server 层）中排序，如果 sort buffer 不够，则在临时表 temporary table 中存储排序结果。完成排序后再根据行指针回表读取记录</strong>，该操作可能会导致大量随机 I/O 操作说明：对于临时内存表，回表过程只是简单地根据数据行的位置，直接访问内存得到数据，不会导致多访问磁盘，优先选择该方式</li>
+<li>全字段排序：一次性取出满足条件的所有数据，需要回表，然后在排序区 sort buffer 中排序后直接输出结果集。排序时内存开销较大，但是排序效率比两次扫描算法高</li>
+</ol>
+<p>具体的选择方式：</p>
+<ul>
+<li>MySQL 通过比较系统变量 max_length_for_sort_data 的大小和 Query 语句取出的字段的大小，来判定使用哪种排序算法。如果前者大，则说明 sort buffer 空间足够，使用第二种优化之后的算法，否则使用第一种。</li>
+<li>可以适当提高 sort_buffer_size 和 max_length_for_sort_data 系统变量，来增大排序区的大小，提高排序的效率</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> @<span class="variable">@max_length_for_sort_data</span> <span class="operator">=</span> <span class="number">10000</span>; 		<span class="comment">-- 设置全局变量</span></span><br><span class="line"><span class="keyword">SET</span> max_length_for_sort_data <span class="operator">=</span> <span class="number">10240</span>; 			<span class="comment">-- 设置会话变量</span></span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;max_length_for_sort_data&#x27;</span>;	<span class="comment">-- 默认1024</span></span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;sort_buffer_size&#x27;</span>;			<span class="comment">-- 默认262114</span></span><br></pre></td></tr></table></figure>
+<p>磁盘临时表：排序使用优先队列（堆）的方式。</p>
+<ul>
+<li>order by优化原则</li>
+</ul>
+<ol>
+<li>根据排序字段建立合适的索引，多字段排序时，也遵循最左前缀法则。</li>
+<li>尽量使用覆盖索引。</li>
+<li>多字段排序, 一个升序一个降序，此时需要注意联合索引在创建时的规则（ASC/DESC）。</li>
+<li>如果不可避免的出现filesort，大数据量排序时，可以适当增大排序缓冲区大小 sort_buffer_size (默认256k)。</li>
+</ol>
+<h3 id="group-by-优化"><a class="markdownIt-Anchor" href="#group-by-优化"></a> GROUP BY 优化</h3>
+<p>GROUP BY 也会进行排序操作，与 ORDER BY 相比，GROUP BY 主要只是多了排序之后的分组操作，所以在 GROUP BY 的实现过程中，与 ORDER BY 一样也可以利用到索引。</p>
+<ul>
+<li>分组查询：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> INDEX idx_emp_age_salary <span class="keyword">ON</span> emp;</span><br><span class="line">EXPLAIN <span class="keyword">SELECT</span> age,<span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> emp <span class="keyword">GROUP</span> <span class="keyword">BY</span> age;</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/17.png" alt="" /><br />
+<strong>Using temporary</strong>：表示 MySQL 需要使用临时表（不是 sort buffer）来存储结果集，常见于排序和分组查询。</p>
+<ul>
+<li>查询包含 GROUP BY 但是用户想要避免排序结果的消耗， 则可以执行 ORDER BY NULL 禁止排序：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> age,<span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> emp <span class="keyword">GROUP</span> <span class="keyword">BY</span> age <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="keyword">NULL</span>;</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/18.png" alt="" /></p>
+<ul>
+<li>创建索引：索引本身有序，不需要临时表，也不需要再额外排序</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> INDEX idx_emp_age_salary <span class="keyword">ON</span> emp(age, salary);</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/19.png" alt="" /></p>
+<ul>
+<li>数据量很大时，使用 SQL_BIG_RESULT 提示优化器直接使用直接用磁盘临时表</li>
+</ul>
+<p>在分组操作中，需要通过以下两点进行优化，以提升性能：</p>
+<ol>
+<li>在分组操作时，可以通过索引来提高效率。</li>
+<li>分组操作时，索引的使用也是满足最左前缀法则的。</li>
+</ol>
+<h3 id="limit-分页优化"><a class="markdownIt-Anchor" href="#limit-分页优化"></a> LIMIT 分页优化</h3>
+<p>一般分页查询时，通过创建覆盖索引能够比较好地提高性能。<br />
+一个常见的问题是 <code>LIMIT 200000,10</code>，此时需要 MySQL 扫描前 200010 记录，仅仅返回 200000 - 200010 之间的记录，其他记录丢弃，查询排序的代价非常大。</p>
+<ul>
+<li>执行limit分页查询耗时对比：越往后，分页查询效率越低，这就是分页查询的问题所在。</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/20.png" alt="" /><br />
+因为，当在进行分页查询时，如果执行 limit 2000000,10 ，此时需要MySQL排序前2000010 记录，仅仅返回 2000000 - 2000010 的记录，其他记录丢弃，查询排序的代价非常大 。<br />
+优化思路（<strong>覆盖索引+子查询</strong>）</p>
+<ul>
+<li>一般分页查询时，通过创建覆盖索引 能够比较好地提高性能，可以通过覆盖索引加子查询形式进行优化</li>
+</ul>
+<h3 id="count-计数优化"><a class="markdownIt-Anchor" href="#count-计数优化"></a> COUNT 计数优化</h3>
+<p>在不同的 MySQL 引擎中，<code>count(*)</code> 有不同的实现方式：</p>
+<ul>
+<li>MyISAM 引擎把一个表的总行数存在了磁盘上，因此执行 <code>count(*)</code> 的时候会直接返回这个数，效率很高，但不支持事务</li>
+<li>InnoDB 表执行<code>count(*)</code> 会遍历全表，虽然结果准确，但会导致性能问题</li>
+<li><code>show table status</code> 命令通过采样估算可以快速获取，但是不准确</li>
+</ul>
+<p>解决方案：</p>
+<ol>
+<li>计数保存在 Redis 中，但是更新 MySQL 和 Redis 的操作不是原子的，会存在数据一致性的问题</li>
+<li>计数直接放到数据库里单独的一张计数表中，利用事务解决计数精确问题：</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/83abe98dc8ef3a9227f3f4bd1d6d8e811652e50808b70a944de382813e316b66/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de8aea1e695b0636f756e74e4bc98e58c962e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/83abe98dc8ef3a9227f3f4bd1d6d8e811652e50808b70a944de382813e316b66/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2de8aea1e695b0636f756e74e4bc98e58c962e706e67#from=url&amp;id=QOjSQ&amp;originHeight=577&amp;originWidth=1075&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a>会话 B 的读操作在 T3 执行的，这时更新事务还没有提交，所以计数值加 1 这个操作对会话 B 还不可见，因此会话 B 查询的计数值和最近 100 条记录，返回的结果逻辑上就是一致的并发系统性能的角度考虑，应该先插入操作记录再更新计数表，因为更新计数表涉及到行锁的竞争，<strong>先插入再更新能最大程度地减少事务之间的锁等待，提升并发度。</strong><br />
+count 函数的按照效率排序：<strong>count(字段) &lt; count(主键id) &lt; count(1) ≈ count(<em>)，所以建议尽量使用 count(</em>)。</strong></p>
+<ul>
+<li><strong>count(字段)</strong>：
+<ul>
+<li>如果这个字段是定义为 not null 的话，一行行地从记录里面读出这个字段，判断不能为 null，按行累加；</li>
+<li>如果这个字段定义允许为 null，那么执行的时候，判断到有可能是 null，还要把值取出来再判断一下，不是 null 才累加</li>
+</ul>
+</li>
+<li><strong>count(主键 id)</strong>：InnoDB 引擎会遍历整张表，把每一行的 id 值都取出来返回给 Server 层，Server 判断 id 不为空就按行累加</li>
+<li><strong>count(1)</strong>：InnoDB 引擎遍历整张表但不取值，Server 层对于返回的每一行，放一个数字 1 进去，判断不为空就按行累加</li>
+<li><strong>count(*)</strong>：不取值，按行累加</li>
+</ul>
+<h3 id="update-更新优化"><a class="markdownIt-Anchor" href="#update-更新优化"></a> UPDATE 更新优化</h3>
+<p>当我们在执行更新的SQL语句时，会锁定该行的数据，然后事务提交之后，行锁释放。如果 where 条件的列并未添加索引，此时行锁升级为了表锁。 导致该 update 语句的性能大大降低。</p>
+<h3 id="联合查询-or"><a class="markdownIt-Anchor" href="#联合查询-or"></a> 联合查询 OR</h3>
+<p>对于包含 OR 的查询子句，如果要利用索引，则 OR 之间的<strong>每个条件列都必须用到索引，而且不能使用到条件之间的复合索引</strong>，如果没有索引，则应该考虑增加索引。</p>
+<ul>
+<li>执行查询语句：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">OR</span> age <span class="operator">=</span> <span class="number">30</span>;	<span class="comment">-- 两个索引，并且不是复合索引!</span></span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/21.png" alt="" /></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Extra: <span class="keyword">Using</span> sort_union(idx_emp_age_salary,<span class="keyword">PRIMARY</span>); <span class="keyword">Using</span> <span class="keyword">where</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>使用 UNION 替换 OR，求并集：</li>
+</ul>
+<p>注意：该优化只针对<strong>多个索引列有效</strong>，如果有列没有被索引，查询效率可能会因为没有选择 OR 而降低。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">UNION</span> <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">WHERE</span> age <span class="operator">=</span> <span class="number">30</span>;</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--sqlyh/22.png" alt="" /></p>
+<ul>
+<li>UNION 要优于 OR 的原因：
+<ul>
+<li>UNION 语句的 type 值为 ref，OR 语句的 type 值为 range</li>
+<li>UNION 语句的 ref 值为 const，OR 语句的 ref 值为 null，const 表示是常量值引用，非常快</li>
+</ul>
+</li>
+</ul>
+<h3 id="嵌套子查询"><a class="markdownIt-Anchor" href="#嵌套子查询"></a> 嵌套(子)查询</h3>
+<p>MySQL 4.1 版本之后，开始支持 SQL 的子查询。</p>
+<ul>
+<li>可以使用 SELECT 语句来创建一个单列的查询结果，然后把结果作为过滤条件用在另一个查询中</li>
+<li>使用子查询可以一次性的完成逻辑上需要多个步骤才能完成的 SQL 操作，同时也可以避免事务或者表锁死</li>
+<li>在有些情况下，<strong>子查询是可以被更高效的连接（JOIN）替代</strong></li>
+</ul>
+<p>例如查找有角色的所有的用户信息：</p>
+<ul>
+<li>执行计划：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t_user <span class="keyword">WHERE</span> id <span class="keyword">IN</span> (<span class="keyword">SELECT</span> user_id <span class="keyword">FROM</span> user_role);</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/ad82b1286e621fe6c72994030c0eb43903c341d38e532a536f93809a6a9f9ec6/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254535254235253843254535254135253937254536253946254135254538254146254132312e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/ad82b1286e621fe6c72994030c0eb43903c341d38e532a536f93809a6a9f9ec6/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254535254235253843254535254135253937254536253946254135254538254146254132312e706e67#from=url&amp;id=XTSNt&amp;originHeight=144&amp;originWidth=1187&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a></p>
+<ul>
+<li>优化后：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t_user u , user_role ur <span class="keyword">WHERE</span> u.id <span class="operator">=</span> ur.user_id;</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/c347fb1c54187057fbc21d40faeaaa831db4f325850a7c0fc9c14cd394d08833/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254535254235253843254535254135253937254536253946254135254538254146254132322e706e67"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://camo.githubusercontent.com/c347fb1c54187057fbc21d40faeaaa831db4f325850a7c0fc9c14cd394d08833/68747470733a2f2f7365617a65616e2e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f696d672f44422f4d7953514c2d25453425424325393825453525384325393653514c254535254235253843254535254135253937254536253946254135254538254146254132322e706e67#from=url&amp;id=oYN9v&amp;originHeight=137&amp;originWidth=1081&amp;originalType=binary&amp;ratio=1.25&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;title=" alt="" /></a>连接查询之所以效率更高 ，是因为<strong>不需要在内存中创建临时表</strong>来完成逻辑上需要两个步骤的查询工作。</p>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://strivingto.top/2024/01/27/MySQL--SQL%20%E4%BC%98%E5%8C%96/" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://strivingto.top/2024/01/27/MySQL--SQL%20%E4%BC%98%E5%8C%96/"/>
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2024/01/29/MySQL--Innodb%20%E5%BC%95%E6%93%8E/">MySQL--Innodb引擎</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2024/01/26/MySQL--%E9%94%81%E6%9C%BA%E5%88%B6/">MySQL--锁机制</a></div></section></div>
+
+  <script>
+    let tianliGPT_postSelector = 'article.content';
+    let tianliGPT_key = '9ba935841efd4f2ee0fd';
+    let tianliGPT_typingAnimate = 'true';
+    let tianliGPT_wordLimit = 100;
+  </script>
+<script defer src="https://cdn1.tianli0.top/gh/zhheo/Post-Abstract-AI@0.15.2/tianli_gpt.min.js"></script>
+
+
+<div class="related-wrap" id="related-posts">
+    <section class='header'>
+      <div class='title cap theme'>您可能感兴趣的文章</div>
+    </section>
+    <section class='body'>
+    <div class="related-posts"><a class="item" href="\2024\01\29\MySQL--Innodb 引擎\" title="MySQL--Innodb引擎"><span class="title">MySQL--Innodb引擎</span></a><a class="item" href="\2023\05\21\MySQL--存储引擎\" title="MySQL--存储引擎"><span class="title">MySQL--存储引擎</span></a><a class="item" href="\2023\05\15\MySQL--单表操作\" title="MySQL--单表操作"><span class="title">MySQL--单表操作</span></a><a class="item" href="\2023\05\11\MySQL--入门\" title="MySQL--入门"><span class="title">MySQL--入门</span></a><a class="item" href="\2024\01\22\MySQL--索引\" title="MySQL--索引"><span class="title">MySQL--索引</span></a></div></section></div>
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="sitemap"><div class="sitemap-group"><span class="fs15">博客</span><a href="/">首页</a><a href="/categories/">分类</a><a href="/tags/">标签</a><a href="/archives/">归档</a></div><div class="sitemap-group"><span class="fs15">项目</span><a href="/">暂无</a></div><div class="sitemap-group"><span class="fs15">社交</span><a href="/friends/">友链</a></div><div class="sitemap-group"><span class="fs15">更多</span><a href="/about/">关于本站</a><a target="_blank" rel="noopener" href="https://github.com/GIMME-JIA">GitHub</a></div></div><div class="text"><center>
+  本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">[CC BY-NC-SA 4.0]</a> 许可协议，转载请注明出处。<br/>
+  <!--不蒜子计数器-->
+  <script defer src="https://busuanzi.9420.ltd/js"></script>
+  <!--添加一个访问量-->
+<p>本页总阅读 <span id="busuanzi_page_pv"></span> 次       页总访客 <span id="busuanzi_page_uv"></span> 人<br />
+本站总访问 <span id="busuanzi_site_pv"></span> 次       本站总访客 <span id="busuanzi_site_uv"></span> 人</p>
+</center>
+</div></footer>
+<div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+<div class="main-mask" onclick="sidebar.toggle()"></div></div></div><div class="scripts">
+<script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.26.8';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.26.8';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js","marked":"/js/plugins/marked.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://cdn.bootcdn.net/ajax/libs/vanilla-lazyload/17.8.4/lazyload.min.js","transition":"fade"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://cdn.bootcdn.net/ajax/libs/scrollReveal.js/4.0.9/scrollreveal.min.js","distance":"16px","duration":800,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","flying_pages":"https://cdn.bootcdn.net/ajax/libs/flying-pages/2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.umd.min.js","css":"https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.min.css","selector":null});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied","toast":"复制成功"});
+  }
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.26.8" async></script>
+
+<!-- optional -->
+
+
+
+
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@v9/dist/mermaid.min.js"></script>
+<script>
+  var mermaid_config = {
+    startOnLoad: true,
+    theme:
+      "auto" == "auto" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "neutral",
+    logLevel: 3,
+    themeVariables: {
+      darkMode: true
+    },
+    flowchart: {
+      useMaxWidth: false,
+      htmlLabels: true,
+      curve: "linear"
+    },
+    gantt: {
+      axisFormat: "%Y/%m/%d"
+    },
+    sequence: {
+      actorMargin: 50
+    }
+  }
+  if (window.mermaid) {
+    mermaid.initialize(mermaid_config);
+  }
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

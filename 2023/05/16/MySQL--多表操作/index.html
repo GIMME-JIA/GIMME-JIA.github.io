@@ -1,0 +1,661 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.26.8" theme-name="Stellar" theme-version="1.26.8">
+  
+  <meta name="generator" content="Hexo 6.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>MySQL--多表操作 - 小破站</title>
+
+  
+    <meta name="description" content="约束分类  约束介绍 约束：对表中的数据进行限定，保证数据的正确性、有效性、完整性。 约束的分类：    约束 说明     PRIMARY KEY 主键约束   PRIMARY KEY AUTO_INCREMENT 主键、自动增长   UNIQUE 唯一约束   NOT NULL 非空约束   FOREIGN KEY 外键约束   FOREIGN KEY ON UPDATE CASCADE 外">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL--多表操作">
+<meta property="og:url" content="https://strivingto.top/2023/05/16/MySQL--%E5%A4%9A%E8%A1%A8%E6%93%8D%E4%BD%9C/index.html">
+<meta property="og:site_name" content="小破站">
+<meta property="og:description" content="约束分类  约束介绍 约束：对表中的数据进行限定，保证数据的正确性、有效性、完整性。 约束的分类：    约束 说明     PRIMARY KEY 主键约束   PRIMARY KEY AUTO_INCREMENT 主键、自动增长   UNIQUE 唯一约束   NOT NULL 非空约束   FOREIGN KEY 外键约束   FOREIGN KEY ON UPDATE CASCADE 外">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--duobcz/Snipaste_2024-03-03_12-14-48.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--duobcz/Snipaste_2024-03-03_12-15-46.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--duobcz/Snipaste_2024-03-03_12-17-33.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--duobcz/Snipaste_2024-03-03_12-18-11.png">
+<meta property="og:image" content="https://strivingto.top/assets/post/MySQL--duobcz/Snipaste_2024-03-03_12-18-52.png">
+<meta property="article:published_time" content="2023-05-16T02:41:02.000Z">
+<meta property="article:modified_time" content="2024-03-04T02:52:22.280Z">
+<meta property="article:author" content="JIA">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://strivingto.top/assets/post/MySQL--duobcz/Snipaste_2024-03-03_12-14-48.png">
+  
+  
+  
+  <meta name="keywords" content="MySQL">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.26.8">
+
+  
+    <link rel="shortcut icon" href="https://i.ibb.co/t8bH857/avatar.png">
+  
+
+  
+
+  
+  
+</head>
+<body>
+
+<div class="l_body content tech" id="start" layout="post" ><aside class="l_left"><div class="sidebar-container sidebar-blur">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://i.ibb.co/t8bH857/avatar.png(/)" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">JIA</div><div class="sub normal cap">种一棵树最好的时间是十年前</div><div class="sub hover cap" style="opacity:0"> 其次是现在</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"><a class="nav-item active" title="主页" href="/" style="color:#1BCDFC"><span>主页</span></a><a class="nav-item" title="友链" href="/friends/" style="color:#F44336"><span>友链</span></a><a class="nav-item" title="关于" href="/about/" style="color:#F44336"><span>关于</span></a></nav>
+</div>
+<div class="widgets">
+
+<widget class="widget-wrapper toc single" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%A6%E6%9D%9F%E5%88%86%E7%B1%BB"><span class="toc-text"> 约束分类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%A6%E6%9D%9F%E4%BB%8B%E7%BB%8D"><span class="toc-text"> 约束介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E9%94%AE%E7%BA%A6%E6%9D%9F"><span class="toc-text"> 主键约束</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E9%94%AE%E8%87%AA%E5%A2%9E"><span class="toc-text"> 主键自增</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%94%AF%E4%B8%80%E7%BA%A6%E6%9D%9F"><span class="toc-text"> 唯一约束</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%9E%E7%A9%BA%E7%BA%A6%E6%9D%9F"><span class="toc-text"> 非空约束</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%96%E9%94%AE%E7%BA%A6%E6%9D%9F"><span class="toc-text"> 外键约束</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%96%E9%94%AE%E7%BA%A7%E8%81%94"><span class="toc-text"> 外键级联</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E8%A1%A8%E8%AE%BE%E8%AE%A1"><span class="toc-text"> 多表设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%AF%B9%E4%B8%80"><span class="toc-text"> 一对一</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%AF%B9%E5%A4%9A"><span class="toc-text"> 一对多</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E5%AF%B9%E5%A4%9A"><span class="toc-text"> 多对多</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5%E6%9F%A5%E8%AF%A2"><span class="toc-text"> 连接查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%A4%96%E8%BF%9E%E6%8E%A5"><span class="toc-text"> 内外连接</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E8%BF%9E%E6%8E%A5"><span class="toc-text"> 内连接</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%96%E8%BF%9E%E6%8E%A5"><span class="toc-text"> 外连接</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E8%81%94%E6%9F%A5%E8%AF%A2"><span class="toc-text"> 关联查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5%E5%8E%9F%E7%90%86"><span class="toc-text"> 连接原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5%E4%BC%98%E5%8C%96"><span class="toc-text"> 连接优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#bka"><span class="toc-text"> BKA</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#bnl"><span class="toc-text"> BNL</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%97%AE%E9%A2%98"><span class="toc-text"> 问题</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BC%98%E5%8C%96"><span class="toc-text"> 优化</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B5%8C%E5%A5%97%E5%AD%90%E6%9F%A5%E8%AF%A2"><span class="toc-text"> 嵌套（子）查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E5%88%86%E7%B1%BB"><span class="toc-text"> 查询分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96"><span class="toc-text"> 查询优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%81%94%E5%90%88%E6%9F%A5%E8%AF%A2"><span class="toc-text"> 联合查询</span></a></li></ol></li></ol></div></div></widget>
+
+
+
+
+
+
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2024/01/24/MySQL--%E9%AB%98%E7%BA%A7%E7%BB%93%E6%9E%84/"><span class="title">MySQL--高级结构</span></a><a class="item title" href="/2024/01/22/MySQL--%E7%B4%A2%E5%BC%95/"><span class="title">MySQL--索引</span></a><a class="item title" href="/2023/05/21/MySQL--%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/"><span class="title">MySQL--存储引擎</span></a><a class="item title" href="/2023/05/15/MySQL--%E5%8D%95%E8%A1%A8%E6%93%8D%E4%BD%9C/"><span class="title">MySQL--单表操作</span></a><a class="item title active" href="/2023/05/16/MySQL--%E5%A4%9A%E8%A1%A8%E6%93%8D%E4%BD%9C/"><span class="title">MySQL--多表操作</span><svg class="active-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M21 11.098v4.993c0 3.096 0 4.645-.734 5.321c-.35.323-.792.526-1.263.58c-.987.113-2.14-.907-4.445-2.946c-1.02-.901-1.529-1.352-2.118-1.47a2.225 2.225 0 0 0-.88 0c-.59.118-1.099.569-2.118 1.47c-2.305 2.039-3.458 3.059-4.445 2.945a2.238 2.238 0 0 1-1.263-.579C3 20.736 3 19.188 3 16.091v-4.994C3 6.81 3 4.666 4.318 3.333C5.636 2 7.758 2 12 2c4.243 0 6.364 0 7.682 1.332C21 4.665 21 6.81 21 11.098" opacity=".5"/><path fill="currentColor" d="M9 5.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5z"/></svg></a><a class="item title" href="/2023/05/11/MySQL--%E5%85%A5%E9%97%A8/"><span class="title">MySQL--入门</span></a><a class="item title" href="/2024/01/26/MySQL--%E9%94%81%E6%9C%BA%E5%88%B6/"><span class="title">MySQL--锁机制</span></a><a class="item title" href="/2024/01/31/MySQL--%E8%BF%90%E7%BB%B4/"><span class="title">MySQL--运维</span></a><a class="item title" href="/2024/01/29/MySQL--Innodb%20%E5%BC%95%E6%93%8E/"><span class="title">MySQL--Innodb引擎</span></a><a class="item title" href="/2024/01/27/MySQL--SQL%20%E4%BC%98%E5%8C%96/"><span class="title">MySQL--SQL优化</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/blog/SOZjJe.jpg">
+  <div class="content">
+    
+<div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2023-05-16T02:41:02.000Z">2023-05-16</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2024-03-04T02:52:22.280Z">2024-03-04</time></span></div></div>
+</div>
+
+    
+    <div class="bottom">
+      <div class="text-area">
+        <h1 class="text title"><span>MySQL--多表操作</span></h1>
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content "><h2 id="约束分类"><a class="markdownIt-Anchor" href="#约束分类"></a> 约束分类</h2>
+<h3 id="约束介绍"><a class="markdownIt-Anchor" href="#约束介绍"></a> 约束介绍</h3>
+<p>约束：对表中的数据进行限定，保证数据的正确性、有效性、完整性。<br />
+约束的分类：</p>
+<table>
+<thead>
+<tr>
+<th>约束</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PRIMARY KEY</td>
+<td>主键约束</td>
+</tr>
+<tr>
+<td>PRIMARY KEY AUTO_INCREMENT</td>
+<td>主键、自动增长</td>
+</tr>
+<tr>
+<td>UNIQUE</td>
+<td>唯一约束</td>
+</tr>
+<tr>
+<td>NOT NULL</td>
+<td>非空约束</td>
+</tr>
+<tr>
+<td>FOREIGN KEY</td>
+<td>外键约束</td>
+</tr>
+<tr>
+<td>FOREIGN KEY ON UPDATE CASCADE</td>
+<td>外键级联更新</td>
+</tr>
+<tr>
+<td>FOREIGN KEY ON DELETE CASCADE</td>
+<td>外键级联删除</td>
+</tr>
+</tbody>
+</table>
+<h3 id="主键约束"><a class="markdownIt-Anchor" href="#主键约束"></a> 主键约束</h3>
+<ul>
+<li>主键约束特点：
+<ul>
+<li>主键约束默认包含<strong>非空和唯一</strong>两个功能</li>
+<li>一张表只能有一个主键</li>
+<li>主键一般用于表中数据的唯一标识</li>
+</ul>
+</li>
+<li>建表时添加主键约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> 表名(</span><br><span class="line">  列名 数据类型 <span class="keyword">PRIMARY</span> KEY,</span><br><span class="line">  列名 数据类型,</span><br><span class="line">  ...</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除主键约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">DROP</span> <span class="keyword">PRIMARY</span> KEY;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>建表后单独添加主键约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 MODIFY 列名 数据类型 <span class="keyword">PRIMARY</span> KEY;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>例如</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建student表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> student(</span><br><span class="line">  id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY  <span class="comment">-- 给id添加主键约束</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 添加数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> student <span class="keyword">VALUES</span> (<span class="number">1</span>),(<span class="number">2</span>);</span><br><span class="line"><span class="comment">-- 主键默认唯一，添加重复数据，会报错</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> student <span class="keyword">VALUES</span> (<span class="number">2</span>);</span><br><span class="line"><span class="comment">-- 主键默认非空，不能添加null的数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> student <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="主键自增"><a class="markdownIt-Anchor" href="#主键自增"></a> 主键自增</h3>
+<p>主键自增约束可以为空，并自动增长。删除某条数据不影响自增的下一个数值，依然按照前一个值自增。</p>
+<ul>
+<li>建表时添加主键自增约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> 表名(</span><br><span class="line">  列名 数据类型 <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,</span><br><span class="line">  列名 数据类型,</span><br><span class="line">  ...</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除主键自增约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 MODIFY 列名 数据类型;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>建表后单独添加主键自增约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 MODIFY 列名 数据类型 AUTO_INCREMENT;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>例如</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建student2表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> student2(</span><br><span class="line">  id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT    <span class="comment">-- 给id添加主键自增约束</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 添加数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> student2 <span class="keyword">VALUES</span> (<span class="number">1</span>),(<span class="number">2</span>);</span><br><span class="line"><span class="comment">-- 添加null值，会自动增长</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> student2 <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>),(<span class="keyword">NULL</span>);<span class="comment">-- 3，4</span></span><br></pre></td></tr></table></figure>
+<h3 id="唯一约束"><a class="markdownIt-Anchor" href="#唯一约束"></a> 唯一约束</h3>
+<p>唯一约束：约束不能有重复的数据。</p>
+<ul>
+<li>建表时添加唯一约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> 表名(</span><br><span class="line">  列名 数据类型 <span class="keyword">UNIQUE</span>,</span><br><span class="line">  列名 数据类型,</span><br><span class="line">  ...</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除唯一约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">DROP</span> INDEX 列名;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>建表后单独添加唯一约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 MODIFY 列名 数据类型 <span class="keyword">UNIQUE</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="非空约束"><a class="markdownIt-Anchor" href="#非空约束"></a> 非空约束</h3>
+<p>非空约束：该列的值不能为空。</p>
+<ul>
+<li>建表时添加非空约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> 表名(</span><br><span class="line">  列名 数据类型 <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  列名 数据类型,</span><br><span class="line">  ...</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除非空约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 MODIFY 列名 数据类型;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>建表后单独添加非空约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 MODIFY 列名 数据类型 <span class="keyword">NOT</span> <span class="keyword">NULL</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="外键约束"><a class="markdownIt-Anchor" href="#外键约束"></a> 外键约束</h3>
+<p>外键约束：让表和表之间产生关系，从而保证数据的准确性。</p>
+<ul>
+<li>建表时添加外键约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> 表名(</span><br><span class="line">  列名 数据类型 约束,</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">CONSTRAINT</span> 外键名 <span class="keyword">FOREIGN</span> KEY (本表外键列名) <span class="keyword">REFERENCES</span> 主表名(主表主键列名)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除外键约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">DROP</span> <span class="keyword">FOREIGN</span> KEY 外键名;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>建表后单独添加外键约束</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> 外键名 <span class="keyword">FOREIGN</span> KEY (本表外键列名) <span class="keyword">REFERENCES</span> 主表名(主表主键列名);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>例如</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建user用户表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="keyword">USER</span>(</span><br><span class="line">  id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,    <span class="comment">-- id</span></span><br><span class="line">  name <span class="type">VARCHAR</span>(<span class="number">20</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>             <span class="comment">-- 姓名</span></span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加用户数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> <span class="keyword">USER</span> <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>,<span class="string">&#x27;张三&#x27;</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;李四&#x27;</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;王五&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建orderlist订单表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> orderlist(</span><br><span class="line">  id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,    <span class="comment">-- id</span></span><br><span class="line">  number <span class="type">VARCHAR</span>(<span class="number">20</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,          <span class="comment">-- 订单编号</span></span><br><span class="line">  uid <span class="type">INT</span>,                              <span class="comment">-- 订单所属用户</span></span><br><span class="line">  <span class="keyword">CONSTRAINT</span> ou_fk1 <span class="keyword">FOREIGN</span> KEY (uid) <span class="keyword">REFERENCES</span> <span class="keyword">USER</span>(id)   <span class="comment">-- 添加外键约束</span></span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加订单数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> orderlist <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>,<span class="string">&#x27;hm001&#x27;</span>,<span class="number">1</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;hm002&#x27;</span>,<span class="number">1</span>),</span><br><span class="line">(<span class="keyword">NULL</span>,<span class="string">&#x27;hm003&#x27;</span>,<span class="number">2</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;hm004&#x27;</span>,<span class="number">2</span>),</span><br><span class="line">(<span class="keyword">NULL</span>,<span class="string">&#x27;hm005&#x27;</span>,<span class="number">3</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;hm006&#x27;</span>,<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 添加一个订单，但是没有所属用户。无法添加</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> orderlist <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>,<span class="string">&#x27;hm007&#x27;</span>,<span class="number">8</span>);</span><br><span class="line"><span class="comment">-- 删除王五这个用户，但是订单表中王五还有很多个订单呢。无法删除</span></span><br><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> <span class="keyword">USER</span> <span class="keyword">WHERE</span> NAME<span class="operator">=</span><span class="string">&#x27;王五&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="外键级联"><a class="markdownIt-Anchor" href="#外键级联"></a> 外键级联</h3>
+<p>级联操作：当把主表中的数据进行删除或更新时，从表中有关联的数据的相应操作，包括 RESTRICT、CASCADE、SET NULL 和 NO ACTION。</p>
+<ul>
+<li>RESTRICT 和 NO ACTION相同， 是指限制在子表有关联记录的情况下， 父表不能更新</li>
+<li>CASCADE 表示父表在更新或者删除时，更新或者删除子表对应的记录</li>
+<li>SET NULL 则表示父表在更新或者删除的时候，子表的对应字段被SET NULL</li>
+</ul>
+<p>级联操作：</p>
+<ul>
+<li>添加级联更新</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> 外键名 <span class="keyword">FOREIGN</span> KEY (本表外键列名) <span class="keyword">REFERENCES</span> 主表名(主表主键列名) <span class="keyword">ON</span> <span class="keyword">UPDATE</span> [CASCADE <span class="operator">|</span> RESTRICT <span class="operator">|</span> <span class="keyword">SET</span> <span class="keyword">NULL</span>];</span><br></pre></td></tr></table></figure>
+<ul>
+<li>添加级联删除</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> 外键名 <span class="keyword">FOREIGN</span> KEY (本表外键列名) <span class="keyword">REFERENCES</span> 主表名(主表主键列名) <span class="keyword">ON</span> <span class="keyword">DELETE</span> CASCADE;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>同时添加级联更新和级联删除</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> 表名 <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> 外键名 <span class="keyword">FOREIGN</span> KEY (本表外键列名) <span class="keyword">REFERENCES</span> 主表名(主表主键列名) <span class="keyword">ON</span> <span class="keyword">UPDATE</span> CASCADE <span class="keyword">ON</span> <span class="keyword">DELETE</span> CASCADE;</span><br></pre></td></tr></table></figure>
+<h2 id="多表设计"><a class="markdownIt-Anchor" href="#多表设计"></a> 多表设计</h2>
+<h3 id="一对一"><a class="markdownIt-Anchor" href="#一对一"></a> 一对一</h3>
+<p>多表：有多张数据表，而表与表之间有一定的关联关系，通过外键约束实现，分为一对一、一对多、多对多三类。<br />
+举例：人和身份证。<br />
+实现原则：在任意一个表建立外键，去关联另外一个表的主键。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建person表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> person(</span><br><span class="line">  id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,	<span class="comment">-- 主键id</span></span><br><span class="line">  NAME <span class="type">VARCHAR</span>(<span class="number">20</span>)                        <span class="comment">-- 姓名</span></span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> person <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>,<span class="string">&#x27;张三&#x27;</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;李四&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建card表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> card(</span><br><span class="line">  id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,	<span class="comment">-- 主键id</span></span><br><span class="line">  number <span class="type">VARCHAR</span>(<span class="number">20</span>) <span class="keyword">UNIQUE</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,	<span class="comment">-- 身份证号</span></span><br><span class="line">  pid <span class="type">INT</span> <span class="keyword">UNIQUE</span>,                         <span class="comment">-- 外键列</span></span><br><span class="line">  <span class="keyword">CONSTRAINT</span> cp_fk1 <span class="keyword">FOREIGN</span> KEY (pid) <span class="keyword">REFERENCES</span> person(id)</span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> card <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>,<span class="string">&#x27;12345&#x27;</span>,<span class="number">1</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;56789&#x27;</span>,<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--duobcz/Snipaste_2024-03-03_12-14-48.png" alt="" /></p>
+<h3 id="一对多"><a class="markdownIt-Anchor" href="#一对多"></a> 一对多</h3>
+<p>举例：用户和订单、商品分类和商品。<br />
+实现原则：在多的一方，建立外键约束，来关联一的一方主键。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建user表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="keyword">USER</span>(</span><br><span class="line">  id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,	<span class="comment">-- 主键id</span></span><br><span class="line">  NAME <span class="type">VARCHAR</span>(<span class="number">20</span>)                        <span class="comment">-- 姓名</span></span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> <span class="keyword">USER</span> <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>,<span class="string">&#x27;张三&#x27;</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;李四&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建orderlist表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> orderlist(</span><br><span class="line">  id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,	<span class="comment">-- 主键id</span></span><br><span class="line">  number <span class="type">VARCHAR</span>(<span class="number">20</span>),                     <span class="comment">-- 订单编号</span></span><br><span class="line">  uid <span class="type">INT</span>,				<span class="comment">-- 外键列</span></span><br><span class="line">  <span class="keyword">CONSTRAINT</span> ou_fk1 <span class="keyword">FOREIGN</span> KEY (uid) <span class="keyword">REFERENCES</span> <span class="keyword">USER</span>(id)</span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> orderlist <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>,<span class="string">&#x27;hm001&#x27;</span>,<span class="number">1</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;hm002&#x27;</span>,<span class="number">1</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;hm003&#x27;</span>,<span class="number">2</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;hm004&#x27;</span>,<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--duobcz/Snipaste_2024-03-03_12-15-46.png" alt="" /></p>
+<h3 id="多对多"><a class="markdownIt-Anchor" href="#多对多"></a> 多对多</h3>
+<p>举例：学生和课程。一个学生可以选择多个课程，一个课程也可以被多个学生选择。<br />
+实现原则：借助第三张表中间表，中间表至少包含两个列，这两个列作为中间表的外键，分别关联两张表的主键。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建student表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> student(</span><br><span class="line">  id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,	<span class="comment">-- 主键id</span></span><br><span class="line">  NAME <span class="type">VARCHAR</span>(<span class="number">20</span>)			<span class="comment">-- 学生姓名</span></span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> student <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>,<span class="string">&#x27;张三&#x27;</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;李四&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建course表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> course(</span><br><span class="line">  id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,	<span class="comment">-- 主键id</span></span><br><span class="line">  NAME <span class="type">VARCHAR</span>(<span class="number">10</span>)			<span class="comment">-- 课程名称</span></span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> course <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>,<span class="string">&#x27;语文&#x27;</span>),(<span class="keyword">NULL</span>,<span class="string">&#x27;数学&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建中间表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> stu_course(</span><br><span class="line">  id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,	<span class="comment">-- 主键id</span></span><br><span class="line">  sid <span class="type">INT</span>,  <span class="comment">-- 用于和student表中的id进行外键关联</span></span><br><span class="line">  cid <span class="type">INT</span>,  <span class="comment">-- 用于和course表中的id进行外键关联</span></span><br><span class="line">  <span class="keyword">CONSTRAINT</span> sc_fk1 <span class="keyword">FOREIGN</span> KEY (sid) <span class="keyword">REFERENCES</span> student(id), <span class="comment">-- 添加外键约束</span></span><br><span class="line">  <span class="keyword">CONSTRAINT</span> sc_fk2 <span class="keyword">FOREIGN</span> KEY (cid) <span class="keyword">REFERENCES</span> course(id)   <span class="comment">-- 添加外键约束</span></span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> stu_course <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>,<span class="number">1</span>,<span class="number">1</span>),(<span class="keyword">NULL</span>,<span class="number">1</span>,<span class="number">2</span>),(<span class="keyword">NULL</span>,<span class="number">2</span>,<span class="number">1</span>),(<span class="keyword">NULL</span>,<span class="number">2</span>,<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--duobcz/Snipaste_2024-03-03_12-17-33.png" alt="" /></p>
+<h2 id="连接查询"><a class="markdownIt-Anchor" href="#连接查询"></a> 连接查询</h2>
+<h3 id="内外连接"><a class="markdownIt-Anchor" href="#内外连接"></a> 内外连接</h3>
+<h4 id="内连接"><a class="markdownIt-Anchor" href="#内连接"></a> 内连接</h4>
+<p>连接查询的是两张表有交集的部分数据，两张表分为<strong>驱动表和被驱动表</strong>，如果结果集中的每条记录都是两个表相互匹配的组合，则称这样的结果集为笛卡尔积。<br />
+内连接查询，若驱动表中的记录在被驱动表中找不到匹配的记录时，则该记录不会加到最后的结果集。</p>
+<ul>
+<li>显式内连接：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> 列名 <span class="keyword">FROM</span> 表名<span class="number">1</span> [<span class="keyword">INNER</span>] <span class="keyword">JOIN</span> 表名<span class="number">2</span> <span class="keyword">ON</span> 条件;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>隐式内连接：内连接中 WHERE 子句和 ON 子句是等价的</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> 列名 <span class="keyword">FROM</span> 表名<span class="number">1</span>,表名<span class="number">2</span> <span class="keyword">WHERE</span> 条件;</span><br></pre></td></tr></table></figure>
+<p>STRAIGHT_JOIN与 JOIN 类似，只不过左表始终在右表之前读取，只适用于内连接。</p>
+<h4 id="外连接"><a class="markdownIt-Anchor" href="#外连接"></a> 外连接</h4>
+<p>外连接查询，若驱动表中的记录在被驱动表中找不到匹配的记录时，则该记录也会加到最后的结果集，只是对于被驱动表中<strong>不匹配过滤条件</strong>的记录，各个字段使用 NULL 填充。<br />
+应用实例：查学生成绩，也想展示出缺考的人的成绩。</p>
+<ul>
+<li>左外连接：选择左侧的表为驱动表，查询左表的全部数据，和左右两张表有交集部分的数据</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> 列名 <span class="keyword">FROM</span> 表名<span class="number">1</span> <span class="keyword">LEFT</span> [<span class="keyword">OUTER</span>] <span class="keyword">JOIN</span> 表名<span class="number">2</span> <span class="keyword">ON</span> 条件;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>右外连接：选择右侧的表为驱动表，查询右表的全部数据，和左右两张表有交集部分的数据</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> 列名 <span class="keyword">FROM</span> 表名<span class="number">1</span> <span class="keyword">RIGHT</span> [<span class="keyword">OUTER</span>] <span class="keyword">JOIN</span> 表名<span class="number">2</span> <span class="keyword">ON</span> 条件;</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--duobcz/Snipaste_2024-03-03_12-18-11.png" alt="" /></p>
+<h3 id="关联查询"><a class="markdownIt-Anchor" href="#关联查询"></a> 关联查询</h3>
+<p>自关联查询：同一张表中有数据关联，可以多次查询这同一个表。</p>
+<ul>
+<li>数据准备</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建员工表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> employee(</span><br><span class="line">  id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,	<span class="comment">-- 员工编号</span></span><br><span class="line">  NAME <span class="type">VARCHAR</span>(<span class="number">20</span>),					<span class="comment">-- 员工姓名</span></span><br><span class="line">  mgr <span class="type">INT</span>,							<span class="comment">-- 上级编号</span></span><br><span class="line">  salary <span class="keyword">DOUBLE</span>						<span class="comment">-- 员工工资</span></span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加数据</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> employee <span class="keyword">VALUES</span> (<span class="number">1001</span>,<span class="string">&#x27;孙悟空&#x27;</span>,<span class="number">1005</span>,<span class="number">9000.00</span>),..,(<span class="number">1009</span>,<span class="string">&#x27;宋江&#x27;</span>,<span class="keyword">NULL</span>,<span class="number">16000.00</span>);</span><br></pre></td></tr></table></figure>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/assets/post/MySQL--duobcz/Snipaste_2024-03-03_12-18-52.png" alt="" /></p>
+<ul>
+<li>数据查询</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查询所有员工的姓名及其直接上级的姓名，没有上级的员工也需要查询</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">分析</span></span><br><span class="line"><span class="comment">	员工信息 employee表</span></span><br><span class="line"><span class="comment">	条件：employee.mgr = employee.id</span></span><br><span class="line"><span class="comment">	查询左表的全部数据，和左右两张表有交集部分数据，左外连接</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">	e1.id,</span><br><span class="line">	e1.name,</span><br><span class="line">	e1.mgr,</span><br><span class="line">	e2.id,</span><br><span class="line">	e2.name</span><br><span class="line"><span class="keyword">FROM</span></span><br><span class="line">	employee e1</span><br><span class="line"><span class="keyword">LEFT</span> <span class="keyword">OUTER</span> <span class="keyword">JOIN</span></span><br><span class="line">	employee e2</span><br><span class="line"><span class="keyword">ON</span></span><br><span class="line">	e1.mgr <span class="operator">=</span> e2.id;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查询结果</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">id		name			mgr	   id	  name</span><br><span class="line"><span class="number">1001</span>	孙悟空	  <span class="number">1005</span>	<span class="number">1005</span>	唐僧</span><br><span class="line"><span class="number">1002</span>	猪八戒	  <span class="number">1005</span>	<span class="number">1005</span>	唐僧</span><br><span class="line"><span class="number">1003</span>	沙和尚	  <span class="number">1005</span>	<span class="number">1005</span>	唐僧</span><br><span class="line"><span class="number">1004</span>	小白龙	  <span class="number">1005</span>	<span class="number">1005</span>	唐僧</span><br><span class="line"><span class="number">1005</span>	唐僧	   <span class="keyword">NULL</span>	 <span class="keyword">NULL</span>	 <span class="keyword">NULL</span></span><br><span class="line"><span class="number">1006</span>	武松	   <span class="number">1009</span>	 <span class="number">1009</span>	 宋江</span><br><span class="line"><span class="number">1007</span>	李逵	   <span class="number">1009</span>	 <span class="number">1009</span>	 宋江</span><br><span class="line"><span class="number">1008</span>	林冲	   <span class="number">1009</span>	 <span class="number">1009</span>	 宋江</span><br><span class="line"><span class="number">1009</span>	宋江	   <span class="keyword">NULL</span>	 <span class="keyword">NULL</span>	 <span class="keyword">NULL</span></span><br></pre></td></tr></table></figure>
+<h3 id="连接原理"><a class="markdownIt-Anchor" href="#连接原理"></a> 连接原理</h3>
+<p><strong>Index Nested-Loop Join</strong> 算法：查询驱动表得到<strong>数据集</strong>，然后根据数据集中的每一条记录的<strong>关联字段再分别</strong>到被驱动表中查找匹配（<strong>走索引</strong>），所以驱动表只需要访问一次，被驱动表要访问多次。</p>
+<p>MySQL 将查询驱动表后得到的记录成为驱动表的扇出，连接查询的成本：单次访问驱动表的成本 + 扇出值 * 单次访问被驱动表的成本，优化器会选择成本最小的表连接顺序（确定谁是驱动表，谁是被驱动表）生成执行计划，进行连接查询，优化方式：</p>
+<ul>
+<li>减少驱动表的扇出（让数据量小的表来做驱动表）</li>
+<li>降低访问被驱动表的成本</li>
+</ul>
+<p>说明：STRAIGHT_JOIN 是查一条驱动表，然后根据关联字段去查被驱动表，要访问多次驱动表，所以需要优化为 INL 算法。</p>
+<p><strong>Block Nested-Loop Join</strong> 算法：一种<strong>空间换时间</strong>的优化方式，基于块的循环连接，执行连接查询前申请一块固定大小的内存作为连接缓冲区 Join Buffer，先把若干条驱动表中的扇出暂存在缓冲区，每一条被驱动表中的记录一次性的与 Buffer 中多条记录进行匹配（扫描全部数据，一条一条的匹配），因为是在内存中完成，所以速度快，并且降低了 I/O 成本。<br />
+Join Buffer 可以通过参数 <code>join_buffer_size</code> 进行配置，默认大小是 256 KB。</p>
+<p>在成本分析时，对于很多张表的连接查询，连接顺序有非常多，MySQL 如果挨着进行遍历计算成本，会消耗很多资源。</p>
+<ul>
+<li>提前结束某种连接顺序的成本评估：维护一个全局变量记录当前成本最小的连接方式，如果一种顺序只计算了一部分就已经超过了最小成本，可以提前结束计算</li>
+<li>系统变量 optimizer_search_depth：如果连接表的个数小于该变量，就继续穷举分析每一种连接数量，反之只对数量与 depth 值相同的表进行分析，该值越大成本分析的越精确</li>
+<li>系统变量 optimizer_prune_level：控制启发式规则的启用，这些规则就是根据以往经验指定的，不满足规则的连接顺序不分析成本</li>
+</ul>
+<h3 id="连接优化"><a class="markdownIt-Anchor" href="#连接优化"></a> 连接优化</h3>
+<h4 id="bka"><a class="markdownIt-Anchor" href="#bka"></a> BKA</h4>
+<p><strong>Batched Key Access</strong> 算法是对 NLJ 算法的优化，在读取被驱动表的记录时使用顺序 IO，Extra 信息中会有 Batched Key Access 信息。<br />
+使用 BKA 的表的 JOIN 过程如下：</p>
+<ul>
+<li>连接驱动表将满足条件的记录放入 Join Buffer，并将两表连接的字段放入一个 DYNAMIC_ARRAY ranges 中</li>
+<li>在进行表的过接过程中，会将 ranges 相关的信息传入 Buffer 中，进行被驱动表主建的查找及排序操作</li>
+<li>调用步骤 2 中产生的有序主建，<strong>顺序读取被驱动表的数据</strong></li>
+<li>当缓冲区的数据被读完后，会重复进行步骤 2、3，直到记录被读取完</li>
+</ul>
+<p>使用 BKA 优化需要设进行设置：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> optimizer_switch<span class="operator">=</span><span class="string">&#x27;mrr=on,mrr_cost_based=off,batched_key_access=on&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>说明：前两个参数的作用是启用 MRR，因为 BKA 算法的优化要依赖于 MRR（系统优化 → 内存优化 → Read 详解）</p>
+<h4 id="bnl"><a class="markdownIt-Anchor" href="#bnl"></a> BNL</h4>
+<h5 id="问题"><a class="markdownIt-Anchor" href="#问题"></a> 问题</h5>
+<p>BNL 即 <strong>Block Nested-Loop Join</strong> 算法，由于要访问多次被驱动表，会产生两个问题：</p>
+<ul>
+<li>Join 语句多次扫描一个冷表，并且语句执行时间小于 1 秒，就会在再次扫描冷表时，把冷表的数据页移到 LRU 链表头部，导致热数据被淘汰，影响业务的正常运行这种情况冷表的数据量要小于整个 Buffer Pool 的 old 区域，能够完全放入 old 区，才会再次被读时加到 young，否则读取下一段时就已经把上一段淘汰</li>
+<li>Join 语句在循环读磁盘和淘汰内存页，进入 old 区域的数据页很可能在 1 秒之内就被淘汰，就会导致 MySQL 实例的 Buffer Pool 在这段时间内 young 区域的数据页没有被合理地淘汰</li>
+</ul>
+<p>大表 Join 操作虽然对 IO 有影响，但是在语句执行结束后对 IO 的影响随之结束。但是对 Buffer Pool 的影响就是持续性的，需要依靠后续的查询请求慢慢恢复内存命中率。</p>
+<h5 id="优化"><a class="markdownIt-Anchor" href="#优化"></a> 优化</h5>
+<p>将 BNL 算法转成 BKA 算法，优化方向：</p>
+<ul>
+<li>在被驱动表上建索引，这样就可以根据索引进行顺序 IO</li>
+<li>使用临时表，<strong>在临时表上建立索引</strong>，将被驱动表和临时表进行连接查询</li>
+</ul>
+<p>驱动表 t1，被驱动表 t2，使用临时表的工作流程：</p>
+<ul>
+<li>把表 t1 中满足条件的数据放在临时表 tmp_t 中</li>
+<li>给临时表 tmp_t 的关联字段加上索引，使用 BKA 算法</li>
+<li>让表 t2 和 tmp_t 做 Join 操作（临时表是被驱动表）</li>
+</ul>
+<p>补充：MySQL 8.0 支持 hash join，join_buffer 维护的不再是一个无序数组，而是一个哈希表，查询效率更高，执行效率比临时表更高。</p>
+<h2 id="嵌套子查询"><a class="markdownIt-Anchor" href="#嵌套子查询"></a> 嵌套（子）查询</h2>
+<h3 id="查询分类"><a class="markdownIt-Anchor" href="#查询分类"></a> 查询分类</h3>
+<p>查询语句中嵌套了查询语句，<strong>将嵌套查询称为子查询</strong>，FROM 子句后面的子查询的结果集称为派生表。<br />
+根据结果分类：</p>
+<ul>
+<li>结果是单行单列：可以将查询的结果作为另一条语句的查询条件，使用运算符判断</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> 列名 <span class="keyword">FROM</span> 表名 <span class="keyword">WHERE</span> 列名<span class="operator">=</span>(<span class="keyword">SELECT</span> 列名<span class="operator">/</span>聚合函数(列名) <span class="keyword">FROM</span> 表名 [<span class="keyword">WHERE</span> 条件]);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>结果是多行单列：可以作为条件，使用运算符 IN 或 NOT IN 进行判断</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> 列名 <span class="keyword">FROM</span> 表名 <span class="keyword">WHERE</span> 列名 [<span class="keyword">NOT</span>] <span class="keyword">IN</span> (<span class="keyword">SELECT</span> 列名 <span class="keyword">FROM</span> 表名 [<span class="keyword">WHERE</span> 条件]); </span><br></pre></td></tr></table></figure>
+<ul>
+<li>结果是多行多列：查询的结果可以作为一张虚拟表参与查询</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> 列名 <span class="keyword">FROM</span> 表名 [别名],(<span class="keyword">SELECT</span> 列名 <span class="keyword">FROM</span> 表名 [<span class="keyword">WHERE</span> 条件]) [别名] [<span class="keyword">WHERE</span> 条件];</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 查询订单表orderlist中id大于4的订单信息和所属用户USER信息</span></span><br><span class="line"><span class="keyword">SELECT</span> </span><br><span class="line">	<span class="operator">*</span> </span><br><span class="line"><span class="keyword">FROM</span> </span><br><span class="line">	<span class="keyword">USER</span> u,</span><br><span class="line">	(<span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> orderlist <span class="keyword">WHERE</span> id<span class="operator">&gt;</span><span class="number">4</span>) o </span><br><span class="line"><span class="keyword">WHERE</span> </span><br><span class="line">	u.id<span class="operator">=</span>o.uid;</span><br></pre></td></tr></table></figure>
+<p>相关性分类：</p>
+<ul>
+<li>不相关子查询：子查询不依赖外层查询的值，可以单独运行出结果</li>
+<li>相关子查询：子查询的执行需要依赖外层查询的值</li>
+</ul>
+<h3 id="查询优化"><a class="markdownIt-Anchor" href="#查询优化"></a> 查询优化</h3>
+<p>不相关子查询的结果集会被写入一个临时表，并且在写入时<strong>去重</strong>，该过程称为<strong>物化</strong>，存储结果集的临时表称为物化表。<br />
+系统变量 t<code>mp_table_size</code> 或者 <code>max_heap_table_size</code> 为表的最值。</p>
+<ul>
+<li>小于系统变量时，内存中可以保存，会为建立<strong>基于内存</strong>的 MEMORY 存储引擎的临时表，并建立哈希索引</li>
+<li>大于任意一个系统变量时，物化表会使用<strong>基于磁盘</strong>的 InnoDB 存储引擎来保存结果集中的记录，索引类型为 B+ 树</li>
+</ul>
+<p>物化后，嵌套查询就相当于外层查询的表和物化表进行内连接查询，然后经过优化器选择成本最小的表连接顺序执行查询。</p>
+<p>子查询物化会产生建立临时表的成本，但是将子查询转化为连接查询可以充分发挥优化器的作用，所以引入：半连接。</p>
+<ul>
+<li>t1 和 t2 表进行半连接，对于 t1 表中的某条记录，只需要关心在 t2 表中是否存在，而不需要关心有多少条记录与之匹配，最终结果集只保留 t1 的记录</li>
+<li>半连接只是执行子查询的一种方式，MySQL 并没有提供面向用户的半连接语法</li>
+</ul>
+<h3 id="联合查询"><a class="markdownIt-Anchor" href="#联合查询"></a> 联合查询</h3>
+<p>UNION 是取这两个子查询结果的并集，并进行去重，同时进行默认规则的排序（union 是行加起来，join 是列加起来）。<br />
+UNION ALL 是对两个结果集进行<strong>并集操作不进行去重</strong>，不进行排序。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">select</span> <span class="number">1000</span> <span class="keyword">as</span> f) <span class="keyword">union</span> (<span class="keyword">select</span> id <span class="keyword">from</span> t1 <span class="keyword">order</span> <span class="keyword">by</span> id <span class="keyword">desc</span> limit <span class="number">2</span>); #t1表中包含id 为 <span class="number">1</span><span class="number">-1000</span> 的数据</span><br></pre></td></tr></table></figure>
+<p>语句的执行流程：</p>
+<ul>
+<li>创建一个内存临时表，这个临时表只有一个整型字段 f，并且 f 是主键字段</li>
+<li>执行第一个子查询，得到 1000 这个值，并存入临时表中</li>
+<li>执行第二个子查询，拿到第一行 id=1000，试图插入临时表中，但由于 1000 这个值已经存在于临时表了，违反了唯一性约束，所以插入失败，然后继续执行</li>
+<li>取到第二行 id=999，插入临时表成功</li>
+<li>从临时表中按行取出数据，返回结果并删除临时表，结果中包含两行数据分别是 1000 和 999</li>
+</ul>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://strivingto.top/2023/05/16/MySQL--%E5%A4%9A%E8%A1%A8%E6%93%8D%E4%BD%9C/" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://strivingto.top/2023/05/16/MySQL--%E5%A4%9A%E8%A1%A8%E6%93%8D%E4%BD%9C/"/>
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/05/21/MySQL--%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">MySQL--存储引擎</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/05/15/MySQL--%E5%8D%95%E8%A1%A8%E6%93%8D%E4%BD%9C/">MySQL--单表操作</a></div></section></div>
+
+  <script>
+    let tianliGPT_postSelector = 'article.content';
+    let tianliGPT_key = '9ba935841efd4f2ee0fd';
+    let tianliGPT_typingAnimate = 'true';
+    let tianliGPT_wordLimit = 100;
+  </script>
+<script defer src="https://cdn1.tianli0.top/gh/zhheo/Post-Abstract-AI@0.15.2/tianli_gpt.min.js"></script>
+
+
+<div class="related-wrap" id="related-posts">
+    <section class='header'>
+      <div class='title cap theme'>您可能感兴趣的文章</div>
+    </section>
+    <section class='body'>
+    <div class="related-posts"><a class="item" href="\2024\01\29\MySQL--Innodb 引擎\" title="MySQL--Innodb引擎"><span class="title">MySQL--Innodb引擎</span></a><a class="item" href="\2023\05\21\MySQL--存储引擎\" title="MySQL--存储引擎"><span class="title">MySQL--存储引擎</span></a><a class="item" href="\2024\01\27\MySQL--SQL 优化\" title="MySQL--SQL优化"><span class="title">MySQL--SQL优化</span></a><a class="item" href="\2023\05\15\MySQL--单表操作\" title="MySQL--单表操作"><span class="title">MySQL--单表操作</span></a><a class="item" href="\2023\05\11\MySQL--入门\" title="MySQL--入门"><span class="title">MySQL--入门</span></a></div></section></div>
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="sitemap"><div class="sitemap-group"><span class="fs15">博客</span><a href="/">首页</a><a href="/categories/">分类</a><a href="/tags/">标签</a><a href="/archives/">归档</a></div><div class="sitemap-group"><span class="fs15">项目</span><a href="/">暂无</a></div><div class="sitemap-group"><span class="fs15">社交</span><a href="/friends/">友链</a></div><div class="sitemap-group"><span class="fs15">更多</span><a href="/about/">关于本站</a><a target="_blank" rel="noopener" href="https://github.com/GIMME-JIA">GitHub</a></div></div><div class="text"><center>
+  本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">[CC BY-NC-SA 4.0]</a> 许可协议，转载请注明出处。<br/>
+  <!--不蒜子计数器-->
+  <script defer src="https://busuanzi.9420.ltd/js"></script>
+  <!--添加一个访问量-->
+<p>本页总阅读 <span id="busuanzi_page_pv"></span> 次       页总访客 <span id="busuanzi_page_uv"></span> 人<br />
+本站总访问 <span id="busuanzi_site_pv"></span> 次       本站总访客 <span id="busuanzi_site_uv"></span> 人</p>
+</center>
+</div></footer>
+<div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+<div class="main-mask" onclick="sidebar.toggle()"></div></div></div><div class="scripts">
+<script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.26.8';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.26.8';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js","marked":"/js/plugins/marked.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://cdn.bootcdn.net/ajax/libs/vanilla-lazyload/17.8.4/lazyload.min.js","transition":"fade"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://cdn.bootcdn.net/ajax/libs/scrollReveal.js/4.0.9/scrollreveal.min.js","distance":"16px","duration":800,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","flying_pages":"https://cdn.bootcdn.net/ajax/libs/flying-pages/2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.umd.min.js","css":"https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.min.css","selector":null});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied","toast":"复制成功"});
+  }
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.26.8" async></script>
+
+<!-- optional -->
+
+
+
+
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@v9/dist/mermaid.min.js"></script>
+<script>
+  var mermaid_config = {
+    startOnLoad: true,
+    theme:
+      "auto" == "auto" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "neutral",
+    logLevel: 3,
+    themeVariables: {
+      darkMode: true
+    },
+    flowchart: {
+      useMaxWidth: false,
+      htmlLabels: true,
+      curve: "linear"
+    },
+    gantt: {
+      axisFormat: "%Y/%m/%d"
+    },
+    sequence: {
+      actorMargin: 50
+    }
+  }
+  if (window.mermaid) {
+    mermaid.initialize(mermaid_config);
+  }
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>
